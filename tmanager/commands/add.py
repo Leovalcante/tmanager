@@ -226,8 +226,7 @@ def parse_tools_from_csv(repositories_file: str, default_install_dir: str, assum
             # If tool_path != directory, then move the local tool
             if tool_path != dst_dir:
                 if not os.path.exists(tool_path):
-                    msg.Prints.info("cannot add {}, pathname does not exist.".format(tool_path), log_fname,
-                                    CMD_NAME)
+                    msg.Prints.info("cannot add {}, pathname does not exist.".format(tool_path), log_fname, CMD_NAME)
                     continue
                 if os.path.exists(dst_dir):
                     msg.Prints.info("{} exists, what to do???".format(dst_dir), log_fname, CMD_NAME, icon=False)
