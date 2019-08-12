@@ -107,7 +107,7 @@ class Config(dict):
 
             if res_tool:
                 # Skip local files if the repo_only is True
-                if repo_only and res_tool.is_localfile():
+                if repo_only and isinstance(res_tool, LocalFile):
                     continue
 
                 tools.append(res_tool)
