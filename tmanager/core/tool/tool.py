@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 
 class Tool(ABC):
-    """Repository class to manage tman repository."""
+    """Tool class to manage tman tools."""
     def __init__(self,
                  url: str,
                  directory: str,
