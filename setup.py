@@ -29,7 +29,7 @@ setup(
     tests_require=[
         "pytest>=4.4",
     ],
-    python_requires=">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*",
+    python_requires=">=3.7",
     entry_points={
         "console_scripts": [
             "tman = tmanager.tman:tman",
@@ -41,6 +41,6 @@ setup(
         "Intended Audience :: End Users/Desktop",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
     ],
 )
