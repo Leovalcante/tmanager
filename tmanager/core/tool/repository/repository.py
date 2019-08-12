@@ -1,6 +1,9 @@
 import git
-import tmanager.utilities.dates as utl_dates
 import os
+import time
+
+import tmanager.utilities.dates as utl_dates
+import tmanager.utilities.file_system as utl_fs
 from tmanager.core.tool.tool import Tool
 
 
@@ -70,12 +73,12 @@ class Repository(Tool):
 
         if verbose:
             tool_desc += f"add date: " \
-                f"{'' if self.get_add_date() is None else utl_dates.time_to_ctime(self.get_add_date())}\n"
+                         f"{'' if self.get_add_date() is None else utl_dates.time_to_ctime(self.get_add_date())}\n"
             tool_desc += f"installation date: " \
-                f"{'not installed' if self.get_install_date() is None else utl_dates.time_to_ctime(self.get_install_date())}\n"
+                         f"{'not installed' if self.get_install_date() is None else utl_dates.time_to_ctime(self.get_install_date())}\n"
 
         tool_desc += f"last update: " \
-            f"{'not installed' if self.get_last_update_date() is None else utl_dates.time_to_ctime(self.get_last_update_date())}"
+                     f"{'not installed' if self.get_last_update_date() is None else utl_dates.time_to_ctime(self.get_last_update_date())}"
 
         return tool_desc
 
@@ -111,7 +114,7 @@ class Repository(Tool):
         """
         try:
             if func == "clone":
-                if os.path.isdir(self.get_directory()):             # check if the repo's directory already exists
+                if os.path.isdir(self.get_directory()):  # check if the repo's directory already exists
                     return 2
                 git.Repo.clone_from(self.get_url(),
                                     self.get_directory())  # if it doesn't exist, then attempt to clone it
@@ -148,3 +151,24 @@ class Repository(Tool):
         # everything went fine, modify the last_update_date
         self.last_update_date = utl_dates.now()
         return 0
+
+    def update_timestamps(self):
+        """
+        Update the repository installation date and its last update date.
+
+        :return: None
+        """
+        t = time.time()
+        self.set_install_date(t)
+        self.set_last_update_date(t)
+
+    def is_installed(self):
+        """
+        Check if the Repository is cloned or not.
+
+        :return bool: True if the tool is installed, False otherwise
+        """
+        if self._install_date is not None or utl_fs.exists_pathname(self._directory):
+            return True
+
+        return False
