@@ -1,13 +1,8 @@
-import time
-import tmanager.utilities.file_system as utls_fs
+from abc import ABC, abstractmethod
 
 
-# TODO: make Tool not instantiable (see ABC)
-class Tool:
-    """
-        Repository class to manage tman repository
-    """
-
+class Tool(ABC):
+    """Repository class to manage tman repository."""
     def __init__(self,
                  url: str,
                  directory: str,
@@ -18,7 +13,7 @@ class Tool:
                  install_date: float = None,
                  last_update_date: float = None):
         """
-        Initialize tool
+        Initialize tool.
 
         :param str url: tool url
         :param str directory: tool installation directory
@@ -64,21 +59,9 @@ class Tool:
         """
         return self.get_name() == other.get_name()
 
-    def is_localfile(self) -> bool:  # TODO: this function should not be here
-        """
-        Check if tool is a local file
-
-        :return bool: True if tool is a local file, False otherwise
-        """
-        return self._type == "local"
-
-    def is_git_repo(self) -> bool:  # TODO: this function should not be here
-        """
-        Check if tool is a repository
-
-        :return bool: True if tool is a git repository, False otherwise
-        """
-        return self._type == "git"
+    @abstractmethod
+    def __str__(self):
+        pass
 
     # GETTER & SETTER
     # URL
@@ -228,21 +211,20 @@ class Tool:
         """
         self._last_update_date = new_last_update_date
 
-    def update_timestamps(self):
+    @abstractmethod
+    def update_timestamps(self) -> None:
         """
-        Update the repository installation date
-        and its last update date.
-        :return:
+        Update the repository installation date and its last update date.
+
+        :return: None
         """
-        if self.is_git_repo():
-            t = time.time()
-            self.set_install_date(t)
-            self.set_last_update_date(t)
+        pass
 
-    def is_installed(self):
-        if self.is_git_repo() and (self._install_date is not None or utls_fs.exists_pathname(self._directory)):
-            return True
-        if self.is_localfile() and utls_fs.exists_pathname(self._directory):
-            return True
+    @abstractmethod
+    def is_installed(self) -> bool:
+        """
+        Check if the tool is installed or not.
 
-        return False
+        :return bool: True if the tool is installed, False otherwise
+        """
+        pass
