@@ -1,10 +1,10 @@
 from tmanager.core.tool.tool import Tool
 import tmanager.utilities.dates as utl_dates
+import tmanager.utilities.file_system as utl_fs
 
 
 class LocalFile(Tool):
     """Repository class to manage tman repository."""
-
     def __init__(self,
                  pathname: str,
                  directory: str = None,
@@ -68,3 +68,22 @@ class LocalFile(Tool):
             tool_desc += "\n"
 
         return tool_desc
+
+    def update_timestamps(self):    # TODO: this is useless, check if is it possible to remove it
+        """
+        Update the repository installation date and its last update date.
+
+        :return: None
+        """
+        pass
+
+    def is_installed(self):
+        """
+        Check if the local file is on the file system or not.
+
+        :return bool: True if the tool is present, False otherwise
+        """
+        if utl_fs.exists_pathname(self._directory):
+            return True
+
+        return False
