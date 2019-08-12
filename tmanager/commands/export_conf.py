@@ -7,6 +7,7 @@ import time
 import tmanager.utilities.file_system as utl_fs
 import tmanager.utilities.commands as utl_cmds
 import tmanager.core.messages.messages as msg
+from tmanager.core.tool.localfile.localfile import LocalFile
 
 CMD_NAME = "export_config"
 
@@ -87,7 +88,7 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
         tools_to_export = configs.get_tools()
     elif exp_local:
         for t in configs.get_tools():
-            if t.is_localfile():
+            if isinstance(t, LocalFile):
                 tools_to_export.append(t)
 
     # save tot tools
