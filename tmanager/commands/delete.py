@@ -121,7 +121,7 @@ def _delete_all(cfg: Config, deleted_tools: list, assume_yes: bool, log_fname: s
         for tool in deleted_tools:
             if tool.is_installed():
                 utl_fs.delete_from_fs(tool.get_directory())
-                msg.Prints.info(f"{tool.get_directory} deleted", log_fname, CMD_NAME, icon=False)
+                msg.Prints.info(f"{tool.get_directory()} deleted", log_fname, CMD_NAME, icon=False)
 
     # Let the user decide which tool he wishes to delete permanently!
     elif deleted_tools and not assume_yes:
