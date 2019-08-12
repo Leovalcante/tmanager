@@ -205,6 +205,7 @@ def parse_tools_from_csv(repositories_file: str, default_install_dir: str, assum
             if not t.startswith("d="):
                 tags.append(t)
 
+        # TODO: fix this type error
         tags = utl_cmds.sanitize_tags(tags)
 
         # Get destination directory
@@ -274,7 +275,7 @@ def add_tool(cfg: Config, tool: Tool, log_fname: str) -> int:
     tools_to_delete = []
 
     # If it is a local file
-    if tool.is_localfile():
+    if isinstance(tool, LocalFile):
         # Make sure the tool exists
         if not os.path.exists(tool.get_directory()):
             return 5
@@ -286,7 +287,7 @@ def add_tool(cfg: Config, tool: Tool, log_fname: str) -> int:
                     return 6
             # otherwise remove any local file that is also managed by tman (already)
             for t in cfg.get_tools():
-                if t.is_localfile() and t.get_directory().startswith(tool.get_directory()):
+                if isinstance(t, LocalFile) and t.get_directory().startswith(tool.get_directory()):
                     tools_to_delete.append(t)
 
     # Check if the tool is already managed
@@ -297,7 +298,7 @@ def add_tool(cfg: Config, tool: Tool, log_fname: str) -> int:
         cfg.remove_tool(t)
 
     # If automatic_install is set, then try to clone the repository
-    if cfg.get_automatic_install() and tool.is_git_repo():
+    if cfg.get_automatic_install() and isinstance(tool, Repository):
         res = tool.clone()
         # If everything is okay, then add the defined new tool into the .config file
         if res == 0:
