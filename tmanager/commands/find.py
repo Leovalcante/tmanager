@@ -61,7 +61,7 @@ def find(ctx: click.core.Context, url: str, tags: str, name: str, type: str, las
 
     else:
         # Retrieve tools that match searching criteria
-        tools = utl_cmds.find_tool(cfg, url=url, tags=tags, name=name, _type=type, last_update_date=last_update_date,
+        tools = utl_cmds.find_tool(cfg, url=url, tags=tags, name=name, type=type, last_update_date=last_update_date,
                                    f=True)
 
     # Total. tools found
@@ -71,14 +71,14 @@ def find(ctx: click.core.Context, url: str, tags: str, name: str, type: str, las
         for tool in tools:
             msg.Prints.info(str(tool) if not vrb else tool.__str__(vrb), log_fname, CMD_NAME, icon=False)
             tot += 1
-        print("")
+        print("")  # TODO: replace this print
 
     if not all:
         # Print summary if all is set
-        msg.Prints.info("Found {}/{} tools".format(tot, len(cfg.get_tools())), log_fname, CMD_NAME, icon=False)
+        msg.Prints.info(f"Found {tot}/{len(cfg.get_tools())} tools", log_fname, CMD_NAME, icon=False)
 
     elif tot != 0:
-        msg.Prints.info("Tot tools: {}".format(len(tools)), log_fname, CMD_NAME, icon=False)
+        msg.Prints.info(f"Tot tools: {len(tools)}", log_fname, CMD_NAME, icon=False)
 
     else:
         # The case where all is set, and there's no tool registered

@@ -6,7 +6,7 @@ from distutils.dir_util import copy_tree
 
 def get_home_env() -> str:
     """
-    Returns $HOME environment variable
+    Returns $HOME environment variable.
 
     :return str: HOME env var
     """
@@ -115,7 +115,7 @@ def move_file(src: str, dst: str, rm: bool = True) -> int:
             if rm:
                 delete_from_fs(src)  # delete src file
         except FileExistsError:
-            msg.Prints.info("ERROR - The file {} already exists".format(dst), "", "", icon=False)
+            msg.Prints.info(f"ERROR - The file {dst} already exists", icon=False)
             return 1
     else:
         fname = get_file_name(src)

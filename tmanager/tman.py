@@ -23,10 +23,10 @@ def tman(ctx: click.core.Context, verbose: bool) -> None:
     """
     \b
     Tman - Tool Manager:
-        Manage all the files and repositories you want, quickly and in a handy way.
-        Keep your repos up-to-date and bring your tools and configurations wherever
-        you wish.
-
+        Manage all the files and repositories you want, quickly
+        and in a handy way.
+        Keep your repos up-to-date and bring your tools and configurations
+        wherever you wish.
     \f
 
     :param click.core.Context ctx: click context

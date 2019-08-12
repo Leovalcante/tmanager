@@ -60,7 +60,7 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
 
     # File already exists, prompt for overwriting
     if res == 2 and not assume_yes:
-        if not click.confirm(msg.Echoes.input("Overwrite {} ?".format(outfile)), default=False):
+        if not click.confirm(msg.Echoes.input(f"Overwrite {outfile} ?"), default=False):
             sys.exit(1)
     # File or directory not writable
     elif res != 0:
@@ -94,7 +94,7 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
     tot_tools_export = len(tools_to_export)
 
     # compute temporary filenames
-    conf_tmp_fname = "{}/tempconf-{}.tman".format(tempfile.gettempdir(), time.time())
+    conf_tmp_fname = f"{tempfile.gettempdir()}/tempconf-{time.time()}.tman"
 
     # create the zip archive handler
     zip_h = zipfile.ZipFile(outfile, 'w', zipfile.ZIP_DEFLATED)
@@ -105,7 +105,7 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
         for cfg in configs:
             if cfg != "tools":
                 # Every non-tool config. parameter goes to the first line
-                l1 += "{}-{},".format(cfg, configs[cfg])
+                l1 += f"{cfg}-{configs[cfg]},"
 
             else:
                 # Tools are listed starting from line 2, one per line
@@ -113,14 +113,14 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
                     for k in repo.__dict__():
                         if k not in ["install_date", "last_update_date", "add_date"]:
                             # Skip dates
-                            oth += "{}-{},".format(k, repo.__dict__()[k])
+                            oth += f"{k}-{repo.__dict__()[k]},"
 
                     # Remove last comma and add new-line
-                    oth = "{}\n".format(oth[:-1])
+                    oth = f"{oth[:-1]}\n"
 
         # Export the configuration file
         # Remove trailing comma, add \n, and write the first line
-        f.write("{}\n".format(l1[:-1]))
+        f.write(f"{l1[:-1]}\n")
 
         # Write the remaining lines, those that represent tools
         f.write(oth)
@@ -131,9 +131,9 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
 
     # Attempt to export the tools
     if tot_tools_export != 0:
-        msg.Prints.info("Compressing {} {}, it may take a while..".format(tot_tools_export,
-                                                                          "tool" if tot_tools_export == 1 else "tools"),
-                        log_fname, CMD_NAME)
+        msg.Prints.info(
+            f"Compressing {tot_tools_export} {'tool' if tot_tools_export == 1 else 'tools'}, it may take a while..",
+            log_fname, CMD_NAME)
         for t in tools_to_export:
             utl_fs.zip_all(zip_h, t.get_directory())
 
@@ -166,7 +166,7 @@ def _validate_pathname(filename: str, log_fname: str) -> int:
     """
     # If the file exists, make sure it's writable
     if os.path.isfile(filename) and not utl_fs.is_writable(filename):
-        msg.Prints.info("The file {} is not writable".format(filename), log_fname, CMD_NAME)
+        msg.Prints.info(f"The file {filename} is not writable", log_fname, CMD_NAME)
         return 1
 
     elif os.path.isfile(filename):
@@ -174,7 +174,7 @@ def _validate_pathname(filename: str, log_fname: str) -> int:
 
     # Otherwise make sure it's parent directory is writable
     elif not utl_fs.is_writable(utl_fs.get_parent(filename)):
-        msg.Prints.info("The directory {} is not writable".format(utl_fs.get_parent(filename)), log_fname, CMD_NAME)
+        msg.Prints.info(f"The directory {utl_fs.get_parent(filename)} is not writable", log_fname, CMD_NAME)
         return 3
 
     return 0

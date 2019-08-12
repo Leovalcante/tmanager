@@ -5,7 +5,7 @@ from tmanager.core.tool.tool import Tool
 
 
 class Repository(Tool):
-    """Repository class to manage tman repository"""
+    """Repository class to manage tman repository."""
 
     def __init__(self,
                  url: str,
@@ -16,7 +16,7 @@ class Repository(Tool):
                  install_date: float = None,
                  last_update_date: float = None):
         """
-        Initialize repository
+        Initialize repository.
 
         :param str url: repository url
         :param str directory: repository installation directory
@@ -39,14 +39,14 @@ class Repository(Tool):
 
         # Set the installation directory
         if not directory.endswith(name):
-            directory = "{dir}{s}{name}".format(dir=directory, s=("" if directory.endswith("/") else "/"), name=name)
+            directory = f"{directory}{'' if directory.endswith('/') else '/'}{name}"
 
         super().__init__(
             url,
             directory,
             name=name,
             _type=_type,
-            tags=tags if tags else list(),
+            tags=tags if tags else [],
             add_date=add_date,
             install_date=install_date,
             last_update_date=last_update_date
@@ -54,36 +54,34 @@ class Repository(Tool):
 
     def __str__(self, verbose: bool = False) -> str:
         """
-        Return repository as string
+        Return repository as string.
 
         :param bool verbose: show all fields
         :return: repository as str
         """
         tool_desc = "\n"
-        tool_desc += "name: {}\n".format(self.get_name())
+        tool_desc += f"name: {self.get_name()}\n"
         if verbose:
-            tool_desc += "url: {}\n".format(self.get_url())
+            tool_desc += f"url: {self.get_url()}\n"
 
-        tool_desc += "tags: {}\n".format(self.get_tags() if self.get_tags() else "[]")
-        tool_desc += "type: {}\n".format(self.get_type())
-        tool_desc += "directory: {}\n".format(self.get_directory())
+        tool_desc += f"tags: {self.get_tags() if self.get_tags() else '[]'}\n"
+        tool_desc += f"type: {self.get_type()}\n"
+        tool_desc += f"directory: {self.get_directory()}\n"
 
         if verbose:
-            tool_desc += "add date: {}\n".format("" if self.get_add_date() is None else utl_dates
-                                                 .time_to_ctime(self.get_add_date()))
-            tool_desc += "installation date: {}\n" \
-                .format("not installed" if self.get_install_date() is None else utl_dates
-                        .time_to_ctime(self.get_install_date()))
+            tool_desc += f"add date: " \
+                f"{'' if self.get_add_date() is None else utl_dates.time_to_ctime(self.get_add_date())}\n"
+            tool_desc += f"installation date: " \
+                f"{'not installed' if self.get_install_date() is None else utl_dates.time_to_ctime(self.get_install_date())}\n"
 
-        tool_desc += "last update: {}" \
-            .format("not installed" if self.get_last_update_date() is None else utl_dates
-                    .time_to_ctime(self.get_last_update_date()))
+        tool_desc += f"last update: " \
+            f"{'not installed' if self.get_last_update_date() is None else utl_dates.time_to_ctime(self.get_last_update_date())}"
 
         return tool_desc
 
     def clone(self) -> int:
         """
-        Clone repository into path
+        Clone repository into path.
 
         :return: int error code
         """
@@ -91,7 +89,7 @@ class Repository(Tool):
 
     def update(self) -> int:
         """
-        Update repository
+        Update repository.
 
         :return: int error code
         """
@@ -100,7 +98,7 @@ class Repository(Tool):
     def _perform(self, func: str) -> int:
         """
         - GitPython errors: https://gitpython.readthedocs.io/en/stable/reference.html#module-git.exc
-        Clone or update
+        Clone or update.
 
         It returns:
             0 on success

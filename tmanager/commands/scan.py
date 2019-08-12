@@ -34,9 +34,9 @@ def scan(ctx: click.core.Context, root_dir: str) -> None:
     root_dir = root_dir or utl_fs.get_home_env()
 
     if not os.path.isdir(root_dir):
-        raise click.BadArgumentUsage(msg.Echoes.error("{} is not a directory".format(root_dir)))
+        raise click.BadArgumentUsage(msg.Echoes.error(f"{root_dir} is not a directory"))
 
-    msg.Prints.info("Using {} as root dir".format(root_dir))
+    msg.Prints.info(f"Using {root_dir} as root dir")
     msg.Prints.info("Scanning system for git repositories. This may take a while")
 
     # Scan the system for git repositories
@@ -52,13 +52,13 @@ def scan(ctx: click.core.Context, root_dir: str) -> None:
             _animated_loading()
     except KeyboardInterrupt:
         msg.Prints.verbose("Searching deamon has been stopped", vrb)
-        msg.Prints.verbose(" Quitting...", vrb)
+        msg.Prints.verbose("Quitting...", vrb)
         raise click.Abort()
 
     # Delete "searching..." line
     sys.stdout.write("\r")
 
-    msg.Prints.warning("{} repositories found".format(len(repos_list)))
+    msg.Prints.warning(f"{len(repos_list)} repositories found")
 
     # Found some repos?
     if repos_list:
@@ -68,7 +68,7 @@ def scan(ctx: click.core.Context, root_dir: str) -> None:
         i = 0
         for repo in repos_list:
             name = repo.split("/")[-1]
-            msg.Prints.info("{}. {}, {}".format(i+1, name, repo))
+            msg.Prints.info(f"{i + 1}. {name}, {repo}")
             i += 1
 
         # Ask the user to add all repositories found
@@ -96,7 +96,7 @@ def scan(ctx: click.core.Context, root_dir: str) -> None:
                 # Sanitize input
                 chosen_indexes = utl_cmds.sanitize_indexes(repos_list, chosen_indexes)
 
-                msg.Prints.verbose("Indexes sanitized: {}".format(chosen_indexes), vrb)
+                msg.Prints.verbose("Indexes sanitized: {chosen_indexes}", vrb)
 
                 # If there are any indexes after index sanitize
                 if chosen_indexes:
@@ -109,7 +109,7 @@ def scan(ctx: click.core.Context, root_dir: str) -> None:
                         for i in chosen_indexes:
                             path = repos_list[i]
                             name = path.split("/")[-1]
-                            msg.Prints.info("{}, {}".format(name, path))
+                            msg.Prints.info(f"{name}, {path}")
 
                 else:
                     # There isn't any valid index, print error message and quit
@@ -131,21 +131,21 @@ def scan(ctx: click.core.Context, root_dir: str) -> None:
             try:
                 repo_url = git_repo.remote("origin").url
             except ValueError:
-                msg.Prints.warning("Skipping {}, no origin found".format(repo_name))
+                msg.Prints.warning(f"Skipping {repo_name}, no origin found")
                 continue
 
             add_time = time.time()
             repository = Repository(repo_url, repo_dir, name=repo_name, add_date=add_time,
                                     install_date=add_time, last_update_date=add_time)
 
-            msg.Prints.verbose("{} is going to be added".format(repository.__str__(True)), vrb)
+            msg.Prints.verbose(f"{repository.__str__(True)} is going to be added", vrb)
 
             if not any(t.get_name() == repository.get_name() for t in cfg.get_tools()):
                 cfg.add_tool(repository)
-                msg.Prints.success("{} successfully added".format(repository.get_name()))
+                msg.Prints.success(f"{repository.get_name()} successfully added")
 
             else:
-                msg.Prints.warning("{} has already been added. Skipping...".format(repository.get_name()))
+                msg.Prints.warning(f"{repository.get_name()} has already been added. Skipping...")
 
         msg.Prints.verbose("All repositories have been added", vrb)
         msg.Prints.verbose("Proceed to save new configurations", vrb)

@@ -30,9 +30,9 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
     \b
     Examples:
         1 - import tman configuration file only
-            tman --import-conf /home/user/tman-config.csv
+            tman import-conf -i /home/user/tman-config.csv
         2 - import a configuration file AND the content of a compressed file
-            tman --import-conf /home/user/tman-config.csv:/home/user/mytools.zip
+            tman import-conf -i /home/user/tman-config.csv:/home/user/mytools.zip
     \f
 
     :param click.core.Context ctx: click context
@@ -62,7 +62,7 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
 
     # Validate input filename
     if not utl_fs.is_writable(infile):
-        msg.Prints.info("'{}' does not exist or it's just not writable".format(infile), log_fname, CMD_NAME)
+        msg.Prints.info(f"'{infile}' does not exist or it isn't readable", log_fname, CMD_NAME)
         sys.exit(1)
 
     # Attempt to load the configuration file
@@ -77,7 +77,7 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
     try:
         zip_h = zipfile.ZipFile(infile, 'r')
     except zipfile.BadZipFile:
-        msg.Prints.info("The file '{}' doesn't seem a ZIP archive".format(infile), log_fname, CMD_NAME)
+        msg.Prints.info(f"The file '{infile}' doesn't seem a ZIP archive", log_fname, CMD_NAME)
         if zip_h:
             zip_h.close()
         sys.exit(1)
@@ -90,7 +90,7 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
         has_conf = False
 
     if not has_conf:
-        msg.Prints.info("No configuration file detected, quitting..".format(infile), log_fname, CMD_NAME)
+        msg.Prints.info("No configuration file detected, quitting...", log_fname, CMD_NAME)
         sys.exit(1)
 
     # Retrieve tools from the archive (if any)
@@ -104,19 +104,19 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
     managed_tools = new_cfg.get_tools()
 
     # Unzip the input file into
-    tmp_dir = "{}/export-{}".format(tempfile.gettempdir(), int(time.time()))
+    tmp_dir = f"{tempfile.gettempdir()}/export-{int(time.time())}"
     zip_h.extractall(tmp_dir)
 
     # Attempt to import the configuration file ONLY
     if len(tools_to_import) == 0:
-        _import_conf_file(managed_tools, new_cfg, "{}/{}".format(tmp_dir, "conf.tman"), assume_yes, log_fname,
+        _import_conf_file(managed_tools, new_cfg, f"{tmp_dir}/conf.tman", assume_yes, log_fname,
                           import_types=import_types if types else None, import_tags=import_tags if tags else None)
 
     else:
-        msg.Prints.info("Importing tools, this may take a while..", log_fname, CMD_NAME)
-        _import_conf_file(managed_tools, new_cfg, "{}/{}".format(tmp_dir, "conf.tman"), assume_yes, log_fname,
+        msg.Prints.info("Importing tools, this may take a while...", log_fname, CMD_NAME)
+        _import_conf_file(managed_tools, new_cfg, f"{tmp_dir}/conf.tman", assume_yes, log_fname,
                           import_types=import_types if types else None, import_tags=import_tags if tags else None)
-        _import_tools_from_archive(new_cfg, "{}{}".format(tmp_dir, "/" if not tmp_dir.endswith("/") else ""),
+        _import_tools_from_archive(new_cfg, f"{tmp_dir}{'/' if not tmp_dir.endswith('/') else ''}",
                                    assume_yes, log_fname, import_types=import_types if types else None,
                                    import_tags=import_tags if tags else None)
 
@@ -216,9 +216,8 @@ def _import_conf_file(all_tools: list, new_cfg: Config, input_conf: str, assume_
                 if tool is not None:
                     if all_tools.__contains__(tool):
                         # If the tool is already managed, then prompt confirmation
-                        if assume_yes or click.confirm(msg.Echoes.input("{} is already managed, overwrite "
-                                                                        "its configuration?".format(tool.get_name())),
-                                                       default=True):
+                        if assume_yes or click.confirm(msg.Echoes.input(
+                                f"{tool.get_name()} is already managed, overwrite its configuration?"), default=True):
                             new_cfg.update_tool(tool)
 
                     else:
@@ -268,10 +267,10 @@ def _import_tools_from_archive(new_cfg: Config, tmp_dir: str, assume_yes: bool, 
                         continue
                 if os.path.exists(t.get_directory()):
                     # Prompt for action if the file already exists
-                    if assume_yes or click.confirm(msg.Echoes.input("{} already exists, overwrite?".format(
-                            t.get_directory())), default=False):
+                    if assume_yes or click.confirm(msg.Echoes.input(f"{t.get_directory()} already exists, overwrite?"),
+                                                   default=False):
                         if utl_fs.move_file(tmp_dir + utl_fs.get_file_name(absf), t.get_directory()) == 0:
-                            msg.Prints.success("{} replaced".format(t.get_directory()), log_fname, CMD_NAME)
+                            msg.Prints.success(f"{t.get_directory()} replaced", log_fname, CMD_NAME)
                             tot_imported += 1
 
                 else:
@@ -289,10 +288,11 @@ def _import_tools_from_archive(new_cfg: Config, tmp_dir: str, assume_yes: bool, 
 
 
 def _validate_format(format_val: str, log_fname: str) -> str:
+    # TODO: docstring
     # set it to its default value if it's not provided
     if not format_val:
         return "zip"
     # otherwise make sure it's valid
     elif format_val not in ["zip"]:
-        msg.Prints.info("The format '{}' is not supported".format(format_val), log_fname, CMD_NAME, icon=True)
+        msg.Prints.info(f"The format '{format_val}' is not supported", log_fname, CMD_NAME, icon=True)
         sys.exit(1)

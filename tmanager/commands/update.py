@@ -27,7 +27,7 @@ def update(ctx: click.core.Context, name: str, repo_url: str, all: bool, log: st
     :return: None
     """
     if not name and not repo_url and not all:
-        utl_cmds.usage_error("update")
+        utl_cmds.usage_error(CMD_NAME)
         sys.exit(1)
 
     # if a filename for logs is provided, then make sure it exists and it's writable.
@@ -57,27 +57,26 @@ def update(ctx: click.core.Context, name: str, repo_url: str, all: bool, log: st
         # skip repo that are not installed
         if not repo.is_installed():
             if not all:
-                msg.Prints.warning("'{}' is not installed.".format(repo.get_name()), log_fname, CMD_NAME)
+                msg.Prints.warning(f"'{repo.get_name()}' is not installed.", log_fname, CMD_NAME)
             continue
         res = repo.update()
         # already up-to-date
         if res == 1:
             if not all:
-                msg.Prints.warning("Tool '{}' is already up to date.".format(repo.get_name()), log_fname, CMD_NAME)
+                msg.Prints.warning(f"Tool '{repo.get_name()}' is already up to date.", log_fname, CMD_NAME)
         # updated successfully
         elif res == 0:
             tot_updated += 1
             repo_name = repo.get_name()
             updated.append(repo_name)
             if not all:
-                msg.Prints.info("Tool '{}' updated successfully.".format(repo_name), log_fname, CMD_NAME, icon=False)
+                msg.Prints.info(f"Tool '{repo_name}' updated successfully.", log_fname, CMD_NAME, icon=False)
         elif res == 5:
-            msg.Prints.info("No need to update localfile '{}'".format(repo.get_directory()), log_fname, CMD_NAME,
-                            icon=False)
+            msg.Prints.info(f"No need to update local file '{repo.get_directory()}'", log_fname, CMD_NAME, icon=False)
 
     if all:
-        msg.Prints.info("Updated {}{}/{} repos".format("" if len(updated) == 0 else "{}, ".format(str(updated)),
-                                                       tot_updated, len(repos)), log_fname, CMD_NAME, icon=False)
+        msg.Prints.info(f"Updated {'' if len(updated) == 0 else f'{str(updated)}, '}{tot_updated}/{len(repos)} repos",
+                        log_fname, CMD_NAME, icon=False)
 
     cfg.save()
     sys.exit(0)
