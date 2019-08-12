@@ -19,8 +19,8 @@ class Config(dict):
         :param kwargs:
         """
         home_path = os.getenv("HOME")
-        tman_config_path = "{}/.tman".format(home_path)
-        tman_config_file = "{}/config.json".format(tman_config_path)
+        tman_config_path = f"{home_path}/.tman"
+        tman_config_file = f"{tman_config_path}/config.json"
 
         self.config_dir = tman_config_path
         self.config_file = tman_config_file
@@ -193,7 +193,7 @@ class Config(dict):
         :return: None
         """
         if self.get_automatic_install():
-            msg.Prints.info("Installing repositories, this may take a while..", "", "")
+            msg.Prints.info("Installing repositories, this may take a while...")
             tot = 0
             for repo in self.get_tools(repo_only=True):
                 if repo.clone() == 0:
@@ -202,7 +202,7 @@ class Config(dict):
                     repo.update_timestamps()
                     self.update_tool(repo)
                     self.save()
-            msg.Prints.info("{} repo cloned".format(tot), "", "")
+            msg.Prints.info(f"{tot} repo cloned", "", "")
 
     def get_automatic_install(self) -> bool:
         """
@@ -262,15 +262,15 @@ class Config(dict):
         :return: None
         """
         if not importing:
-            msg.Prints.warning("Configuration file not found!", "", "")
+            msg.Prints.warning("Configuration file not found!")
 
         # Check if configuration directory exists, otherwise create it
         if not os.path.isdir(self.config_dir):
             os.makedirs(self.config_dir)
 
         # Guide the user through the very first setup
-        if click.confirm(msg.Echoes.input("Would you like to use {} as your default installation directory? "
-                                          .format(self.config_dir)), default=True):
+        if click.confirm(msg.Echoes.input(
+                f"Would you like to use {self.config_dir} as your default installation directory?"), default=True):
             default_installation_directory = self.config_dir
         else:
             default_installation_directory = click.prompt(
@@ -283,4 +283,4 @@ class Config(dict):
         self["tools"] = []
 
         self.save()
-        msg.Prints.success("Configuration file {} has been created successfully".format(self.config_file), "", "")
+        msg.Prints.success(f"Configuration file {self.config_file} has been created successfully")

@@ -6,7 +6,7 @@ from srblib import abs_path
 from tmanager.core.config.config import Config
 
 
-def find_tool(cfg: Config, url: str = None, tags: str = None, name: str = None, _type: str = None,
+def find_tool(cfg: Config, url: str = None, tags: str = None, name: str = None, type: str = None,
               last_update_date: str = None, f: bool = False) -> list:
     """
     Returns the list of Tools that match all the provided input criteria.
@@ -15,7 +15,7 @@ def find_tool(cfg: Config, url: str = None, tags: str = None, name: str = None, 
     :param str url: repository url
     :param str tags: repository tags
     :param str name: repository name
-    :param str _type: repository type
+    :param str type: repository type
     :param str last_update_date: repository last_update_date
     :param bool f: flexible find
     :return list: repositories list
@@ -27,13 +27,13 @@ def find_tool(cfg: Config, url: str = None, tags: str = None, name: str = None, 
     tags = sanitize_tags(tags)
 
     if url is not None:
-        url = url if url.endswith(".git") else "{}{}".format(url, ".git")
+        url = url if url.endswith(".git") else f"{url}.git"
 
     search_terms = {
         "url": url,
         "tags": tags,
         "name": name,
-        "type": _type,
+        "type": type,
         "last_update_date": last_update_date
     }
 
@@ -226,8 +226,8 @@ def _make_it_list(args: list) -> list:
 
 
 def usage_error(cmd_name):
-    msg.Prints.info("Usage error: tman [OPTIONS] command [ARGS]", "", "")
-    msg.Prints.info("Run 'tman {} --help' to see options".format(cmd_name), "", "", icon=False)
+    msg.Prints.info("Usage error: tman [OPTIONS] command [ARGS]")
+    msg.Prints.info(f"Run 'tman {cmd_name} --help' to see options", icon=False)
 
 
 def validate_log_filename(filename: str, cmd_name: str, assume_yes: bool = False) -> str:
@@ -245,12 +245,12 @@ def validate_log_filename(filename: str, cmd_name: str, assume_yes: bool = False
 
     # if it's a writable file then retrieve the logfile absolute pathname
     if utl_fs.is_writable(filename) and os.path.isfile(filename):
-        if not assume_yes and not click.confirm("'{}' exists, overwrite?".format(filename)):
+        if not assume_yes and not click.confirm(f"'{filename}' exists, overwrite?"):
             return log_fname
         log_fname = abs_path(filename)
     # if it's not writable or it doesn't exist or it's a directory, then quit
     elif os.path.exists(filename):
-        msg.Prints.warning("file {} doesn't exist or it's not writable".format(filename), log_fname, cmd_name)
+        msg.Prints.warning(f"file {filename} doesn't exist or it's not writable", log_fname, cmd_name)
         return log_fname
     # attempt to create the new log file
     else:
@@ -258,7 +258,7 @@ def validate_log_filename(filename: str, cmd_name: str, assume_yes: bool = False
             with open(filename, "w"):
                 pass
         except PermissionError:
-            msg.Prints.warning("not enough privileges to create {}".format(filename), log_fname, cmd_name)
+            msg.Prints.warning(f"not enough privileges to create {filename}", log_fname, cmd_name)
             return log_fname
         except FileNotFoundError:
             msg.Prints.warning("please enter a valid pathname", log_fname, cmd_name)

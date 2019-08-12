@@ -36,7 +36,7 @@ def date_to_epoch(date_time: str) -> float:
         raise click.BadParameter(msg.Echoes.error("Bad data format! It must be dd-mm-yyyy"), param="--last-update-date",
                                  param_hint="Date format MUST BE dd-mm-yyyy")
 
-    date_time = "{}-0-0-0-0-0-0".format(date_time)
+    date_time = f"{date_time}-0-0-0-0-0-0"
     # noinspection PyTypeChecker
     date_time = time.mktime(tuple([int(e) for e in date_time.split("-")]))
     return date_time

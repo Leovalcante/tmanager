@@ -31,7 +31,7 @@ def delete(ctx: click.core.Context, name: str, input_file: str, all: bool, log: 
     cfg = utl_cmds.get_configs_from_context(ctx)
     # Make sure that at least one options is set
     if not (bool(name) ^ bool(input_file) ^ bool(all)):
-        utl_cmds.usage_error("delete")
+        utl_cmds.usage_error(CMD_NAME)
         sys.exit(1)
 
     # if a filename for logs is provided, then make sure it exists and it's writable.
@@ -63,8 +63,8 @@ def delete(ctx: click.core.Context, name: str, input_file: str, all: bool, log: 
 
         except FileNotFoundError:
             raise click.BadOptionUsage("--input-file",
-                                       "The file {} doesn't exist or it's not readable, try with another one"
-                                       .format(input_file))
+                                       f"The file {input_file} doesn't exist or it isn't readable, try with another one"
+                                       )
 
     # Display an info message if there's no repository to delete
     if (bool(all) is False and len(tools_to_delete) == 0) or (bool(all) and len(tools) == 0):
@@ -79,14 +79,13 @@ def delete(ctx: click.core.Context, name: str, input_file: str, all: bool, log: 
         # Delete the retrieved tools
         for tool in tools_to_delete:
             cfg.remove_tool(tool)
-            msg.Prints.success("{} has been removed".format(tool.get_name()), log_fname, CMD_NAME)
+            msg.Prints.success(f"{tool.get_name()} has been removed", log_fname, CMD_NAME)
 
             # Ensure the user wishes to delete the tools from file system too
             if tool.is_installed() and (assume_yes or click.confirm(msg.Echoes.input(
-                    "Delete {} from file system too?".format(tool.get_name())), default=False)):
+                    f"Delete {tool.get_name()} from file system too?"), default=False)):
                 utl_fs.delete_from_fs(tool.get_directory())
-                msg.Prints.success("{} successfully deleted from file system!".format(tool.get_name()),
-                                   log_fname, CMD_NAME)
+                msg.Prints.success(f"{tool.get_name()} successfully deleted from file system!", log_fname, CMD_NAME)
 
     cfg.save()
     sys.exit(0)
@@ -108,7 +107,7 @@ def _delete_all(cfg: Config, deleted_tools: list, assume_yes: bool, log_fname: s
         raise click.Abort()
 
     # Remove all the tools
-    msg.Prints.info("{} tools removed".format(cfg.remove_all_tools()), log_fname, CMD_NAME)
+    msg.Prints.info(f"{cfg.remove_all_tools()} tools removed", log_fname, CMD_NAME)
 
     # Update the configuration file
     cfg.save()
@@ -122,17 +121,18 @@ def _delete_all(cfg: Config, deleted_tools: list, assume_yes: bool, log_fname: s
         for tool in deleted_tools:
             if tool.is_installed():
                 utl_fs.delete_from_fs(tool.get_directory())
-                msg.Prints.info("{} deleted".format(tool.get_directory()), log_fname, CMD_NAME, icon=False)
+                msg.Prints.info(f"{tool.get_directory} deleted", log_fname, CMD_NAME, icon=False)
 
     # Let the user decide which tool he wishes to delete permanently!
     elif deleted_tools and not assume_yes:
         msg.Prints.info("Enter comma-separated list of indexes to remove (i.e. 1,3,4)", log_fname, CMD_NAME)
 
         for tool in deleted_tools:
-            click.echo("[{}]: {}".format(str(deleted_tools.index(tool)+1), tool.get_name()))
+            # TODO: remove click.echo, use msg.Prints instead
+            click.echo(f"[{str(deleted_tools.index(tool) + 1)}]: {tool.get_name()}")
 
         to_delete = None
-        tool_to_save_indexes = input(">>> ")
+        tool_to_save_indexes = input(">>> ")    # TODO: avoid input
         if tool_to_save_indexes and tool_to_save_indexes.lower() not in ["no", "n", "quit", "q", "none"]:
             # Check if they're all valid numbers
             to_delete = utl_cmds.sanitize_indexes(deleted_tools, tool_to_save_indexes)
@@ -141,8 +141,7 @@ def _delete_all(cfg: Config, deleted_tools: list, assume_yes: bool, log_fname: s
             for index in to_delete:
                 repo = deleted_tools[index]
                 utl_fs.delete_from_fs(repo.get_directory())
-                msg.Prints.success("{} deleted successfully from file system".format(repo.get_name()),
-                                   log_fname, CMD_NAME)
+                msg.Prints.success(f"{repo.get_name()} deleted successfully from file system", log_fname, CMD_NAME)
 
         if not to_delete:
             msg.Prints.info("No tool will be erased from file system", log_fname, CMD_NAME)

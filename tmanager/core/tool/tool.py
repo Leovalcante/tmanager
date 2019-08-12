@@ -2,6 +2,7 @@ import time
 import tmanager.utilities.file_system as utls_fs
 
 
+# TODO: make Tool not instantiable (see ABC)
 class Tool:
     """
         Repository class to manage tman repository
@@ -63,7 +64,7 @@ class Tool:
         """
         return self.get_name() == other.get_name()
 
-    def is_localfile(self) -> bool:
+    def is_localfile(self) -> bool:  # TODO: this function should not be here
         """
         Check if tool is a local file
 
@@ -71,7 +72,7 @@ class Tool:
         """
         return self._type == "local"
 
-    def is_git_repo(self) -> bool:
+    def is_git_repo(self) -> bool:  # TODO: this function should not be here
         """
         Check if tool is a repository
 

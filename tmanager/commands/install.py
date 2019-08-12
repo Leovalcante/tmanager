@@ -29,7 +29,7 @@ def install(ctx: click.core.Context, name: str, repo_url: str, all: bool, log: s
     :return: None
     """
     if not name and not repo_url and not all:
-        utl_cmds.usage_error("install")
+        utl_cmds.usage_error(CMD_NAME)
         sys.exit(1)
 
     # if a filename for logs is provided, then make sure it exists and it's writable.
@@ -79,7 +79,7 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
 
     # If there's no tool to install, display error message and return
     if len(tools) == 0:
-        msg.Prints.warning("there's no tool to install", log_fname, CMD_NAME)
+        msg.Prints.warning("There's no tool to install", log_fname, CMD_NAME)
         return 1
 
     # Install any tool that matches the criteria
@@ -95,7 +95,7 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
             tot_installed += 1
 
             if not _all:
-                msg.Prints.info("'{}' cloned successfully".format(tool.get_name()), log_fname, CMD_NAME)
+                msg.Prints.info(f"'{tool.get_name()}' cloned successfully", log_fname, CMD_NAME)
 
             # append the tool name to the installed toolnames list
             installed.append(tool.get_name())
@@ -112,17 +112,15 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
             # Ask the user what to do with the directory found
             # If assume_yes is set, then the default action that is take is (3):update
             choice = click.prompt(msg.Echoes.input(
-                "Directory '{}' found, what to do? \n[1] nothing; [2] delete & clone; [3] update\n>>>".format(
-                    tool.get_directory())), default=None) if not assume_yes else "3"
+                f"Directory '{tool.get_directory()}' found, what to do? \n[1] nothing; [2] delete & clone; "
+                f"[3] update\n>>>"), default=None) if not assume_yes else "3"
 
             # NOTE: please wait before modifying this block of code!!!
             if choice == "2":
                 # Delete and clone the repo
-                msg.Prints.info("removing '{}'..".format(tool.get_name()), log_fname, CMD_NAME,
-                                icon=True)
+                msg.Prints.info(f"removing '{tool.get_name()}'..", log_fname, CMD_NAME)
                 utl_fs.delete_from_fs(tool.get_directory())
-                msg.Prints.info("cloning '{}'..".format(tool.get_name()), log_fname, CMD_NAME,
-                                icon=True)
+                msg.Prints.info(f"cloning '{tool.get_name()}'..", log_fname, CMD_NAME)
                 tool.clone()
                 # Update repo install date and last-update-date
                 tool.update_timestamps()
@@ -131,7 +129,7 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
 
             elif choice == "3":
                 # Just update the repo content
-                msg.Prints.info("updating '{}'.. this may take a while.".format(tool.get_name()), log_fname, CMD_NAME,
+                msg.Prints.info(f"updating '{tool.get_name()}'.. this may take a while.", log_fname, CMD_NAME,
                                 icon=False)
                 res = tool.update()
 
@@ -141,22 +139,20 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
                 tool.set_last_update_date(utl_dates.now())
                 cfg.update_tool(tool)
                 if res == 0:
-                    msg.Prints.info("'{}' updates successfully".format(tool.get_name()), log_fname, CMD_NAME,
-                                    icon=True)
+                    msg.Prints.info(f"'{tool.get_name()}' updates successfully", log_fname, CMD_NAME)
                 elif res == 1:
-                    msg.Prints.info("'{}' is already up-to-date".format(tool.get_name()), log_fname, CMD_NAME,
-                                    icon=True)
+                    msg.Prints.info(f"'{tool.get_name()}' is already up-to-date", log_fname, CMD_NAME)
                 else:
-                    msg.Prints.info("An unexpected error has occurred when trying to update {}".format(tool.get_name()),
-                                    log_fname, CMD_NAME, icon=True)
+                    msg.Prints.info(f"An unexpected error has occurred when trying to update {tool.get_name()}",
+                                    log_fname, CMD_NAME)
             else:
                 # Choice (1): just continue
                 continue
 
     if _all:
-        msg.Prints.info("Installed {}{}/{} tools".format("" if tot_installed == 0 else "{}, ".format(str(installed)),
-                                                         tot_installed, len(tools)), log_fname, CMD_NAME,
-                        icon=False)
+        msg.Prints.info(
+            f"Installed {'' if tot_installed == 0 else f'{str(installed)}, '}{tot_installed}/{len(tools)} tools",
+            log_fname, CMD_NAME, icon=False)
 
     cfg.save()
     return 0
