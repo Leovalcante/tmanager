@@ -58,8 +58,11 @@ def scan(ctx: click.core.Context, root_dir: str) -> None:
     # Delete "searching..." line
     sys.stdout.write("\r")
 
-    msg.Prints.warning(f"{len(repos_list)} repositories found")
+    # Remove already added repositories
+    already_added_repo_set = set(map(lambda t: t.get_name(), cfg.get_tools(repo_only=True)))
+    repos_list = list(filter(lambda r: r.split("/")[-1] not in already_added_repo_set, repos_list))
 
+    msg.Prints.warning(f"{len(repos_list)} repositories found")
     # Found some repos?
     if repos_list:
         msg.Prints.verbose("Listing repositories", vrb)
