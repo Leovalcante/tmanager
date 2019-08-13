@@ -128,11 +128,10 @@ def _delete_all(cfg: Config, deleted_tools: list, assume_yes: bool, log_fname: s
         msg.Prints.info("Enter comma-separated list of indexes to remove (i.e. 1,3,4)", log_fname, CMD_NAME)
 
         for tool in deleted_tools:
-            # TODO: remove click.echo, use msg.Prints instead
-            click.echo(f"[{str(deleted_tools.index(tool) + 1)}]: {tool.get_name()}")
+            msg.Prints.info(f"[{str(deleted_tools.index(tool) + 1)}]: {tool.get_name()}", icon=False)
 
         to_delete = None
-        tool_to_save_indexes = input(">>> ")    # TODO: avoid input
+        tool_to_save_indexes = click.prompt(">>> ", 'no')
         if tool_to_save_indexes and tool_to_save_indexes.lower() not in ["no", "n", "quit", "q", "none"]:
             # Check if they're all valid numbers
             to_delete = utl_cmds.sanitize_indexes(deleted_tools, tool_to_save_indexes)
