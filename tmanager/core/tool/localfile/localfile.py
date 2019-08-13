@@ -69,14 +69,6 @@ class LocalFile(Tool):
 
         return tool_desc
 
-    def update_timestamps(self):    # TODO: this is useless, check if is it possible to remove it
-        """
-        Update the repository installation date and its last update date.
-
-        :return: None
-        """
-        pass
-
     def is_installed(self):
         """
         Check if the local file is on the file system or not.

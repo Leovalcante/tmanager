@@ -212,15 +212,6 @@ class Tool(ABC):
         self._last_update_date = new_last_update_date
 
     @abstractmethod
-    def update_timestamps(self) -> None:
-        """
-        Update the repository installation date and its last update date.
-
-        :return: None
-        """
-        pass
-
-    @abstractmethod
     def is_installed(self) -> bool:
         """
         Check if the tool is installed or not.
