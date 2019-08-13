@@ -133,7 +133,7 @@ def sanitize_types(types: str) -> list:
     return valid_types
 
 
-def sanitize_tags(tags: str) -> list:   # TODO: this function takes as input also a list? Fix it
+def sanitize_tags(tags: str) -> list:
     """
     Given a tag list (represented as the input string 'tags') it returns
     a list containing valid and sanitized tags.
@@ -147,13 +147,13 @@ def sanitize_tags(tags: str) -> list:   # TODO: this function takes as input als
     """
     valid_tags = []
     if tags:
-        if type(tags) is not list:
-            tags = tags.split(",")
+        tags = tags.split(",")
         for tag in tags:
-            # remove spaces
-            tag = tag.strip().replace(" ", "")
+            # Remove spaces
+            tag = tag.replace(" ", "")
             if tag:
                 valid_tags.append(tag)
+
     return valid_tags
 
 
