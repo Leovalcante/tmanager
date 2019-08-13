@@ -1,5 +1,8 @@
 import click
 import os
+
+import git
+
 import tmanager.core.messages.messages as msg
 import tmanager.utilities.file_system as utl_fs
 from srblib import abs_path
@@ -117,11 +120,12 @@ def is_git_url(url: str) -> bool:
     :param str url: url to check
     :return: True if url could be a git url, False otherwise
     """
-    # TODO: make this controls more restrictive
-    if url.startswith("http") or url.startswith("git"):
+    try:
+        g = git.cmd.Git()
+        g.ls_remote(url)
         return True
-
-    return False
+    except git.exc.GitCommandError:
+        return False
 
 
 def sanitize_types(types: str) -> list:
