@@ -71,7 +71,6 @@ def find(ctx: click.core.Context, url: str, tags: str, name: str, type: str, las
         for tool in tools:
             msg.Prints.info(str(tool) if not vrb else tool.__str__(vrb), log_fname, CMD_NAME, icon=False)
             tot += 1
-        print("")  # TODO: replace this print
 
     if not all:
         # Print summary if all is set
