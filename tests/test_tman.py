@@ -31,8 +31,8 @@ def test_tman_verbose_missing_command():
 
 
 def test_tman_verbose():
-    result = runner.invoke(tman, ["--verbose", "find"])
-    assert result.exit_code != 0  # Find error is raised
+    result = runner.invoke(tman, ["--verbose", "add"])
+    assert result.exit_code != 0  # Add error is raised
 
 
 def test_tman_missing_command():
