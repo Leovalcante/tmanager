@@ -200,13 +200,12 @@ def parse_tools_from_csv(repositories_file: str, default_install_dir: str, assum
         url = res[0]
 
         # Get tags
-        tags = []
+        tags_str = ""
         for t in res[1:]:
             if not t.startswith("d="):
-                tags.append(t)
+                tags_str += f"{t},"     # Last trailing comma will be removed by sanitize tags
 
-        # TODO: fix this type error
-        tags = utl_cmds.sanitize_tags(tags)
+        tags = utl_cmds.sanitize_tags(tags_str)
 
         # Get destination directory
         directory = default_install_dir
