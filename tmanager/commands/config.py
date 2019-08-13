@@ -65,9 +65,8 @@ def config(ctx: click.core.Context, default_dir: str, auto_install: str, cron_jo
 
     # If no option is specified, then print current config. settings
     if not ((bool(default_dir) != bool(auto_install)) != bool(cron_job)):
-        # TODO: Remove these print
-        print(f"auto-install: {cfg.get_automatic_install()}")
-        print(f"default-dir : {cfg.get_default_installation_directory()}")
+        msg.Prints.info(f"auto-install: {cfg.get_automatic_install()}", icon=False)
+        msg.Prints.info(f"default-dir : {cfg.get_default_installation_directory()}", icon=False)
         sys.exit(0)
 
     # DEFAULT INSTALLATION DIRECTORY
