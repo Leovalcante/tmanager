@@ -8,6 +8,8 @@ tool_manager.egg-info/
 
 *__pycache__*
 
+.cache
+
 venv/
 generate_command_executed_sequence
 
