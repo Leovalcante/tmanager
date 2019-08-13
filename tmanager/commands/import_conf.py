@@ -285,14 +285,3 @@ def _import_tools_from_archive(new_cfg: Config, tmp_dir: str, assume_yes: bool, 
 
     utl_fs.delete_from_fs(tmp_dir)
     new_cfg.save()
-
-
-def _validate_format(format_val: str, log_fname: str) -> str:
-    # TODO: docstring
-    # set it to its default value if it's not provided
-    if not format_val:
-        return "zip"
-    # otherwise make sure it's valid
-    elif format_val not in ["zip"]:
-        msg.Prints.info(f"The format '{format_val}' is not supported", log_fname, CMD_NAME, icon=True)
-        sys.exit(1)
