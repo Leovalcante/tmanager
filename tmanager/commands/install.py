@@ -4,6 +4,7 @@ import tmanager.utilities.dates as utl_dates
 import tmanager.utilities.file_system as utl_fs
 import tmanager.utilities.commands as utl_cmds
 import tmanager.core.messages.messages as msg
+from tmanager.core.tool.repository.repository import Repository
 
 CMD_NAME = "install"
 
@@ -86,7 +87,7 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
     tot_installed = 0
     installed = list()
     for tool in tools:
-        if not tool.is_git_repo():
+        if not isinstance(tool, Repository):
             continue
         # Clone the repository
         res = tool.clone()
