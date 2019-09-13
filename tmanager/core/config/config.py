@@ -1,7 +1,9 @@
 import os
 import json
+from typing import Optional
+
 import click
-import tmanager.core.messages.messages as msg
+import tmanager.core.messages as msg
 from tmanager.core.tool.tool import Tool
 from tmanager.core.tool.repository.repository import Repository
 from tmanager.core.tool.localfile.localfile import LocalFile
@@ -131,12 +133,12 @@ class Config(dict):
 
         return False
 
-    def get_tool(self, tool_name: str) -> Tool or None:
+    def get_tool(self, tool_name: str) -> Optional[Tool]:
         """
         Return a Tool by name.
 
         :param str tool_name: tool name to find
-        :return Tool|None: found tool or None
+        :return Optional[Tool]: found tool or None
         """
         for tool in self.get_tools():
             if tool.get_name() == tool_name:
@@ -202,7 +204,7 @@ class Config(dict):
                     repo.update_timestamps()
                     self.update_tool(repo)
                     self.save()
-            msg.Prints.info(f"{tot} repo cloned", "", "")
+            msg.Prints.info(f"{tot} repo cloned")
 
     def get_automatic_install(self) -> bool:
         """
