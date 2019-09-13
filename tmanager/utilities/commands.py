@@ -3,12 +3,13 @@ import os
 
 import git
 
-import tmanager.core.messages.messages as msg
+import tmanager.core.messages as msg
 import tmanager.utilities.file_system as utl_fs
 from srblib import abs_path
 from tmanager.core.config.config import Config
 
 
+# TODO: give a more clear name to "f"
 def find_tool(cfg: Config, url: str = None, tags: str = None, name: str = None, type: str = None,
               last_update_date: str = None, f: bool = False) -> list:
     """
@@ -231,7 +232,7 @@ def _make_it_list(args: list) -> list:
 
 def usage_error(cmd_name):
     msg.Prints.info("Usage error: tman [OPTIONS] command [ARGS]")
-    msg.Prints.info(f"Run 'tman {cmd_name} --help' to see options", icon=False)
+    msg.Prints.info(f"Run 'tman {cmd_name} --help' to see options", show_icon=False)
 
 
 def validate_log_filename(filename: str, cmd_name: str, assume_yes: bool = False) -> str:
@@ -245,31 +246,33 @@ def validate_log_filename(filename: str, cmd_name: str, assume_yes: bool = False
     :param bool assume_yes: overwrite the input file without asking the user
     :return:
     """
-    log_fname = ""
+    log_file_name = ""
 
     # if it's a writable file then retrieve the logfile absolute pathname
     if utl_fs.is_writable(filename) and os.path.isfile(filename):
         if not assume_yes and not click.confirm(f"'{filename}' exists, overwrite?"):
-            return log_fname
-        log_fname = abs_path(filename)
+            return log_file_name
+        log_file_name = abs_path(filename)
     # if it's not writable or it doesn't exist or it's a directory, then quit
     elif os.path.exists(filename):
-        msg.Prints.warning(f"file {filename} doesn't exist or it's not writable", log_fname, cmd_name)
-        return log_fname
+        msg.Prints.warning(f"file {filename} doesn't exist or it's not writable",
+                           cmd_name=cmd_name, log_file_name=log_file_name)
+        return log_file_name
     # attempt to create the new log file
     else:
         try:
             with open(filename, "w"):
                 pass
         except PermissionError:
-            msg.Prints.warning(f"not enough privileges to create {filename}", log_fname, cmd_name)
-            return log_fname
+            msg.Prints.warning(f"not enough privileges to create {filename}",
+                               cmd_name=cmd_name, log_file_name=log_file_name)
+            return log_file_name
         except FileNotFoundError:
-            msg.Prints.warning("please enter a valid pathname", log_fname, cmd_name)
-            return log_fname
-        log_fname = abs_path(filename)
+            msg.Prints.warning("please enter a valid pathname", cmd_name=cmd_name, log_file_name=log_file_name)
+            return log_file_name
+        log_file_name = abs_path(filename)
 
-    return log_fname
+    return log_file_name
 
 
 def get_user_login() -> str:

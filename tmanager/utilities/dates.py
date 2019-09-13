@@ -1,7 +1,7 @@
 import click
 import time
 import datetime
-import tmanager.core.messages.messages as msg
+import tmanager.core.messages as msg
 
 
 def time_to_ctime(posix_time: float) -> str:

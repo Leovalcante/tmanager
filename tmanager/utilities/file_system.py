@@ -1,6 +1,6 @@
 import os
 import shutil
-import tmanager.core.messages.messages as msg
+import tmanager.core.messages as msg
 from distutils.dir_util import copy_tree
 
 
@@ -115,7 +115,7 @@ def move_file(src: str, dst: str, rm: bool = True) -> int:
             if rm:
                 delete_from_fs(src)  # delete src file
         except FileExistsError:
-            msg.Prints.info(f"ERROR - The file {dst} already exists", icon=False)
+            msg.Prints.info(f"ERROR - The file {dst} already exists", show_icon=False)
             return 1
     else:
         fname = get_file_name(src)
