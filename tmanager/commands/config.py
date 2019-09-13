@@ -5,7 +5,7 @@ import shutil
 import tmanager.core.messages as msg
 import tmanager.utilities.commands as utl_cmds
 import tmanager.utilities.file_system as utl_fs
-from tmanager.core.config.config import Config
+from tmanager.core.config import Config
 from crontab import CronTab, CronItem
 from srblib import abs_path
 

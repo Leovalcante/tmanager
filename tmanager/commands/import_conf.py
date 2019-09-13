@@ -7,7 +7,7 @@ import tempfile
 import tmanager.utilities.file_system as utl_fs
 import tmanager.utilities.commands as utl_cmds
 import tmanager.core.messages as msg
-from tmanager.core.config.config import Config
+from tmanager.core.config import Config
 from tmanager.core.tool.repository.repository import Repository
 from tmanager.core.tool.localfile.localfile import LocalFile
 

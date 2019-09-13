@@ -10,7 +10,7 @@ from srblib import abs_path
 from tmanager.core.tool.repository.repository import Repository
 from tmanager.core.tool.localfile.localfile import LocalFile
 from tmanager.core.tool.tool import Tool
-from tmanager.core.config.config import Config
+from tmanager.core.config import Config
 
 CMD_NAME = "add"
 

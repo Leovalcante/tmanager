@@ -3,7 +3,7 @@ import sys
 import tmanager.core.messages as msg
 import tmanager.utilities.commands as utl_cmds
 import tmanager.utilities.file_system as utl_fs
-from tmanager.core.config.config import Config
+from tmanager.core.config import Config
 from tmanager.core.tool.tool import Tool
 
 CMD_NAME = "modify"
