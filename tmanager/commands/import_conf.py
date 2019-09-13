@@ -6,7 +6,7 @@ import zipfile
 import tempfile
 import tmanager.utilities.file_system as utl_fs
 import tmanager.utilities.commands as utl_cmds
-import tmanager.core.messages.messages as msg
+import tmanager.core.messages as msg
 from tmanager.core.config.config import Config
 from tmanager.core.tool.repository.repository import Repository
 from tmanager.core.tool.localfile.localfile import LocalFile
@@ -44,10 +44,10 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
     :return: None
     """
     # if a filename for logs is provided, then make sure it exists and it's writable.
-    log_fname = ""
+    log_file_name = ""
     if log:
-        log_fname = utl_cmds.validate_log_filename(log, CMD_NAME, assume_yes)
-        if not log_fname:
+        log_file_name = utl_cmds.validate_log_filename(log, CMD_NAME, assume_yes)
+        if not log_file_name:
             sys.exit(1)
 
     # Validate input types and input tags (if any)
@@ -62,14 +62,15 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
 
     # Validate input filename
     if not utl_fs.is_writable(infile):
-        msg.Prints.info(f"'{infile}' does not exist or it isn't readable", log_fname, CMD_NAME)
+        msg.Prints.info(f"'{infile}' does not exist or it isn't readable",
+                        cmd_name=CMD_NAME, log_file_name=log_file_name)
         sys.exit(1)
 
     # Attempt to load the configuration file
     new_cfg = Config()
     if new_cfg.load(importing=True) == 1:
         # Create the default installation directory if it doesn't exist
-        msg.Prints.info("Configuration file not found", log_fname, CMD_NAME)
+        msg.Prints.info("Configuration file not found", cmd_name=CMD_NAME, log_file_name=log_file_name)
         new_cfg.first_configuration(importing=True)
 
     # Attempt to open the ZIP archive
@@ -77,7 +78,8 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
     try:
         zip_h = zipfile.ZipFile(infile, 'r')
     except zipfile.BadZipFile:
-        msg.Prints.info(f"The file '{infile}' doesn't seem a ZIP archive", log_fname, CMD_NAME)
+        msg.Prints.info(f"The file '{infile}' doesn't seem a ZIP archive",
+                        cmd_name=CMD_NAME, log_file_name=log_file_name)
         if zip_h:
             zip_h.close()
         sys.exit(1)
@@ -90,7 +92,7 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
         has_conf = False
 
     if not has_conf:
-        msg.Prints.info("No configuration file detected, quitting...", log_fname, CMD_NAME)
+        msg.Prints.info("No configuration file detected, quitting...", cmd_name=CMD_NAME, log_file_name=log_file_name)
         sys.exit(1)
 
     # Retrieve tools from the archive (if any)
@@ -109,15 +111,15 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
 
     # Attempt to import the configuration file ONLY
     if len(tools_to_import) == 0:
-        _import_conf_file(managed_tools, new_cfg, f"{tmp_dir}/conf.tman", assume_yes, log_fname,
+        _import_conf_file(managed_tools, new_cfg, f"{tmp_dir}/conf.tman", assume_yes, log_file_name,
                           import_types=import_types if types else None, import_tags=import_tags if tags else None)
 
     else:
-        msg.Prints.info("Importing tools, this may take a while...", log_fname, CMD_NAME)
-        _import_conf_file(managed_tools, new_cfg, f"{tmp_dir}/conf.tman", assume_yes, log_fname,
+        msg.Prints.info("Importing tools, this may take a while...", log_file_name, CMD_NAME)
+        _import_conf_file(managed_tools, new_cfg, f"{tmp_dir}/conf.tman", assume_yes, log_file_name,
                           import_types=import_types if types else None, import_tags=import_tags if tags else None)
         _import_tools_from_archive(new_cfg, f"{tmp_dir}{'/' if not tmp_dir.endswith('/') else ''}",
-                                   assume_yes, log_fname, import_types=import_types if types else None,
+                                   assume_yes, log_file_name, import_types=import_types if types else None,
                                    import_tags=import_tags if tags else None)
 
     # Auto_install if required
@@ -133,7 +135,7 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
     sys.exit(0)
 
 
-def _import_conf_file(all_tools: list, new_cfg: Config, input_conf: str, assume_yes: bool, log_fname: str,
+def _import_conf_file(all_tools: list, new_cfg: Config, input_conf: str, assume_yes: bool, log_file_name: str,
                       import_types: list = None, import_tags: list = None) -> None:
     """
     Attempt to import a tman configuration file.
@@ -142,7 +144,7 @@ def _import_conf_file(all_tools: list, new_cfg: Config, input_conf: str, assume_
     :param Config new_cfg: configuration object
     :param str input_conf: input configuration file
     :param bool assume_yes: assume YES for any user prompt
-    :param str log_fname: log filename
+    :param str log_file_name: log filename
     :return: None
     """
     # Parse the tman configuration file and import the configuration
@@ -226,10 +228,10 @@ def _import_conf_file(all_tools: list, new_cfg: Config, input_conf: str, assume_
                     new_cfg.save()
 
     new_cfg.save()
-    msg.Prints.info("Configuration file saved", log_fname, CMD_NAME)
+    msg.Prints.info("Configuration file saved", cmd_name=CMD_NAME, log_file_name=log_file_name)
 
 
-def _import_tools_from_archive(new_cfg: Config, tmp_dir: str, assume_yes: bool, log_fname: str,
+def _import_tools_from_archive(new_cfg: Config, tmp_dir: str, assume_yes: bool, log_file_name: str,
                                import_types: list = None, import_tags: list = None) -> None:
     """
     Import tools from archive.
@@ -270,7 +272,8 @@ def _import_tools_from_archive(new_cfg: Config, tmp_dir: str, assume_yes: bool, 
                     if assume_yes or click.confirm(msg.Echoes.input(f"{t.get_directory()} already exists, overwrite?"),
                                                    default=False):
                         if utl_fs.move_file(tmp_dir + utl_fs.get_file_name(absf), t.get_directory()) == 0:
-                            msg.Prints.success(f"{t.get_directory()} replaced", log_fname, CMD_NAME)
+                            msg.Prints.success(f"{t.get_directory()} replaced",
+                                               cmd_name=CMD_NAME, log_file_name=log_file_name)
                             tot_imported += 1
 
                 else:
@@ -281,7 +284,7 @@ def _import_tools_from_archive(new_cfg: Config, tmp_dir: str, assume_yes: bool, 
                 break
 
     if tot_imported != 0:
-        msg.Prints.success("tools imported properly", log_fname, CMD_NAME)
+        msg.Prints.success("tools imported properly", cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     utl_fs.delete_from_fs(tmp_dir)
     new_cfg.save()

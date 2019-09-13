@@ -2,7 +2,7 @@ import click
 import os
 import sys
 import shutil
-import tmanager.core.messages.messages as msg
+import tmanager.core.messages as msg
 import tmanager.utilities.commands as utl_cmds
 import tmanager.utilities.file_system as utl_fs
 from tmanager.core.config.config import Config
@@ -38,12 +38,14 @@ def config(ctx: click.core.Context, default_dir: str, auto_install: str, cron_jo
     :param str log: log filename
     :return: None
     """
-    # if a filename for logs is provided, then make sure it exists and it's writable.
-    log_fname = ""
-    if log:
-        log_fname = utl_cmds.validate_log_filename(log, CMD_NAME)
-        if not log_fname:
-            sys.exit(1)
+    # TODO: review following statement, as is, it's useless, so i've commented it out
+    # If a filename for logs is provided, then make sure it exists and it's writable.
+    # log_file_name = ""
+    # if log:
+    #     log_file_name = utl_cmds.validate_log_filename(log, CMD_NAME)
+    #     if not log_file_name:
+    #         # TODO: print an error message
+    #         sys.exit(1)
 
     # Get configurations and verbose
     cfg = utl_cmds.get_configs_from_context(ctx)
@@ -65,8 +67,8 @@ def config(ctx: click.core.Context, default_dir: str, auto_install: str, cron_jo
 
     # If no option is specified, then print current config. settings
     if not ((bool(default_dir) != bool(auto_install)) != bool(cron_job)):
-        msg.Prints.info(f"auto-install: {cfg.get_automatic_install()}", icon=False)
-        msg.Prints.info(f"default-dir : {cfg.get_default_installation_directory()}", icon=False)
+        msg.Prints.info(f"auto-install: {cfg.get_automatic_install()}", show_icon=False)
+        msg.Prints.info(f"default-dir : {cfg.get_default_installation_directory()}", show_icon=False)
         sys.exit(0)
 
     # DEFAULT INSTALLATION DIRECTORY
@@ -177,7 +179,7 @@ def _cron_job_create_update(cfg: Config, cron_job: str, cron: CronTab, vrb: bool
         update_cron = click.confirm(msg.Echoes.input(f"Do you want to update existing job: {job}"), default=False)
 
         if update_cron:
-            msg.Prints.info("You are going to be prompted by Tman Job Wizard in order to update your job",)
+            msg.Prints.info("You are going to be prompted by Tman Job Wizard in order to update your job")
             cron.remove(job)
         else:
             msg.Prints.warning(f"@@@ Update aborted by {utl_cmds.get_user_login()}")
@@ -391,6 +393,7 @@ def _get_cron_job_data(cfg: Config) -> list:
     if log != default_logfile:
         log = utl_cmds.validate_log_filename(log, CMD_NAME)
         if not log:
+            # TODO: print an error message
             sys.exit(1)
 
     # Remove spaces, they will cause error in cron job writing
@@ -470,8 +473,9 @@ def _raise_cron_input_data_exception(param: str, param_hint: str) -> None:
     param = param.capitalize()
     param_hint = f"{param} value MUST BE in {param_hint} range"
     raise click.BadParameter(
-        msg.Echoes.error(f"@@@ {param} parameter does not respect the rules. That's not cool man..."), param=param,
-        param_hint=param_hint)
+        msg.Echoes.error(f"@@@ {param} parameter does not respect the rules. That's not cool man..."),
+        param=param, param_hint=param_hint
+    )
 
 
 def _set_new_auto_install(auto_install: str, cfg: Config, vrb: bool) -> None:

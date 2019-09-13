@@ -6,7 +6,7 @@ import tempfile
 import time
 import tmanager.utilities.file_system as utl_fs
 import tmanager.utilities.commands as utl_cmds
-import tmanager.core.messages.messages as msg
+import tmanager.core.messages as msg
 from tmanager.core.tool.localfile.localfile import LocalFile
 
 CMD_NAME = "export_config"
@@ -47,17 +47,18 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
     :return: None
     """
     # if a filename for logs is provided, then make sure it exists and it's writable.
-    log_fname = ""
+    log_file_name = ""
     if log:
-        log_fname = utl_cmds.validate_log_filename(log, CMD_NAME, assume_yes)
-        if not log_fname:
+        log_file_name = utl_cmds.validate_log_filename(log, CMD_NAME, assume_yes)
+        if not log_file_name:
+            # TODO: print an error message
             sys.exit(1)
 
     # Retrieve the configuration file if it exists, otherwise start the configuration wizard
     configs = utl_cmds.get_configs_from_context(ctx)
 
     # Validate outfile pathname
-    res = _validate_pathname(outfile, log_fname)
+    res = _validate_pathname(outfile, log_file_name)
 
     # File already exists, prompt for overwriting
     if res == 2 and not assume_yes:
@@ -95,14 +96,14 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
     tot_tools_export = len(tools_to_export)
 
     # compute temporary filenames
-    conf_tmp_fname = f"{tempfile.gettempdir()}/tempconf-{time.time()}.tman"
+    conf_tmp_file_name = f"{tempfile.gettempdir()}/tempconf-{time.time()}.tman"
 
     # create the zip archive handler
     zip_h = zipfile.ZipFile(outfile, 'w', zipfile.ZIP_DEFLATED)
 
     # Attempt to export the configuration file as a CSV
     l1 = oth = ""
-    with open(conf_tmp_fname, "w") as f:
+    with open(conf_tmp_file_name, "w") as f:
         for cfg in configs:
             if cfg != "tools":
                 # Every non-tool config. parameter goes to the first line
@@ -125,30 +126,30 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
 
         # Write the remaining lines, those that represent tools
         f.write(oth)
-        msg.Prints.info("Configuration file saved", log_fname, CMD_NAME)
+        msg.Prints.info("Configuration file saved", cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     # add the config file to the archive
-    utl_fs.zip_all(zip_h, conf_tmp_fname)
+    utl_fs.zip_all(zip_h, conf_tmp_file_name)
 
     # Attempt to export the tools
     if tot_tools_export != 0:
         msg.Prints.info(
             f"Compressing {tot_tools_export} {'tool' if tot_tools_export == 1 else 'tools'}, it may take a while..",
-            log_fname, CMD_NAME)
+            cmd_name=CMD_NAME, log_file_name=log_file_name)
         for t in tools_to_export:
             utl_fs.zip_all(zip_h, t.get_directory())
 
     # close the ZIP file handler
     zip_h.close()
-    msg.Prints.success("Archive created successfully", log_fname, CMD_NAME)
+    msg.Prints.success("Archive created successfully", cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     # delete temporary files
-    utl_fs.delete_from_fs(conf_tmp_fname)
+    utl_fs.delete_from_fs(conf_tmp_file_name)
 
     sys.exit(0)
 
 
-def _validate_pathname(filename: str, log_fname: str) -> int:
+def _validate_pathname(filename: str, log_file_name: str) -> int:
     """
     Returns True either if the given filename exists and is writable
     OR if it doesn't exist but its parent directory is writable;
@@ -162,12 +163,12 @@ def _validate_pathname(filename: str, log_fname: str) -> int:
     3 -- parent directory not writable
 
     :param str filename: file name to validate
-    :param str log_fname: log filename
+    :param str log_file_name: log filename
     :return int: status code
     """
     # If the file exists, make sure it's writable
     if os.path.isfile(filename) and not utl_fs.is_writable(filename):
-        msg.Prints.info(f"The file {filename} is not writable", log_fname, CMD_NAME)
+        msg.Prints.info(f"The file {filename} is not writable", cmd_name=CMD_NAME, log_file_name=log_file_name)
         return 1
 
     elif os.path.isfile(filename):
@@ -175,7 +176,8 @@ def _validate_pathname(filename: str, log_fname: str) -> int:
 
     # Otherwise make sure it's parent directory is writable
     elif not utl_fs.is_writable(utl_fs.get_parent(filename)):
-        msg.Prints.info(f"The directory {utl_fs.get_parent(filename)} is not writable", log_fname, CMD_NAME)
+        msg.Prints.info(f"The directory {utl_fs.get_parent(filename)} is not writable",
+                        cmd_name=CMD_NAME, log_file_name=log_file_name)
         return 3
 
     return 0

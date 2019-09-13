@@ -5,7 +5,7 @@ import sys
 import time
 import threading
 import git
-import tmanager.core.messages.messages as msg
+import tmanager.core.messages as msg
 import tmanager.utilities.file_system as utl_fs
 import tmanager.utilities.commands as utl_cmds
 

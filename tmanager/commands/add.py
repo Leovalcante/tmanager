@@ -2,7 +2,7 @@ import os
 import sys
 import click
 import time
-import tmanager.core.messages.messages as msg
+import tmanager.core.messages as msg
 import tmanager.utilities.commands as utl_cmds
 import tmanager.utilities.file_system as utl_fs
 
@@ -44,10 +44,11 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
         sys.exit(1)
 
     # if a filename for logs is provided, then make sure it exists and it's writable.
-    log_fname = ""
+    log_file_name = ""
     if log:
-        log_fname = utl_cmds.validate_log_filename(log, CMD_NAME, assume_yes)
-        if not log_fname:
+        log_file_name = utl_cmds.validate_log_filename(log, CMD_NAME, assume_yes)
+        if not log_file_name:
+            # TODO: print an error
             sys.exit(1)
 
     # Load the configuration file
@@ -56,11 +57,12 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
     # Add tools from CSV
     imported_tools = 0
     if in_file:
-        tools = parse_tools_from_csv(in_file, cfg.get_default_installation_directory(), assume_yes, log_fname)
+        tools = parse_tools_from_csv(in_file, cfg.get_default_installation_directory(), assume_yes, log_file_name)
         for t in tools:
-            if add_tool(cfg, t, log_fname) == 0:
+            if add_tool(cfg, t, log_file_name) == 0:
                 imported_tools += 1
-        msg.Prints.info(f"Successfully imported {imported_tools}/{len(tools)} tools", log_fname, CMD_NAME, icon=False)
+        msg.Prints.info(f"Successfully imported {imported_tools}/{len(tools)} tools", show_icon=False,
+                        cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     # Add one tool
     else:
@@ -78,7 +80,8 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
 
         # If the provided directory doesn't exist or it's not writable, then quit
         if not utl_fs.is_writable(directory):
-            msg.Prints.warning(f"{directory} doesn't exist or it isn't writable", log_fname, CMD_NAME)
+            msg.Prints.error(f"{directory} doesn't exist or it isn't writable",
+                             cmd_name=CMD_NAME, log_file_name=log_file_name)
             sys.exit(1)
 
         # Check whether the tool is a repository or a local file
@@ -91,7 +94,8 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
 
             # If the local_file does not exist or it's not writable, then quit
             if not utl_fs.is_writable(tool_path):
-                msg.Prints.warning(f"{tool_path} doesn't exist or it's not writable", log_fname, CMD_NAME)
+                msg.Prints.error(f"{tool_path} doesn't exist or it's not writable",
+                                 cmd_name=CMD_NAME, log_file_name=log_file_name)
                 sys.exit(1)
 
             # Get the absolute pathname
@@ -122,8 +126,8 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
                     tool_path = directory + tool_path.split("/")[-1]
                     tool = LocalFile(tool_path, tags=tags, add_date=time.time())
                 else:
-                    msg.Prints.info(f"Tool {utl_fs.get_file_name(tool_path)} is already managed!!!", log_fname,
-                                    CMD_NAME)
+                    msg.Prints.info(f"Tool {utl_fs.get_file_name(tool_path)} is already managed!!!",
+                                    cmd_name=CMD_NAME, log_file_name=log_file_name)
                     tool = None
             else:
                 tool = LocalFile(tool_path, tags=tags, add_date=time.time())
@@ -133,36 +137,39 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
             sys.exit(1)
 
         # Add the tool to the tman configuration file
-        res = add_tool(cfg, tool, log_fname)
+        res = add_tool(cfg, tool, log_file_name)
 
         # Display error message
         if res == 0:
             # Everything okay
-            msg.Prints.info(f"'{tool.get_name()}' added successfully", log_fname, CMD_NAME)
+            msg.Prints.info(f"'{tool.get_name()}' added successfully", cmd_name=CMD_NAME, log_file_name=log_file_name)
             sys.exit(0)
         elif res == 1:
-            msg.Prints.warning(f"'{tool.get_name()}' not cloned, '{tool.get_directory()}' already exists!", log_fname,
-                               CMD_NAME)
+            msg.Prints.warning(f"'{tool.get_name()}' not cloned, '{tool.get_directory()}' already exists!",
+                               cmd_name=CMD_NAME, log_file_name=log_file_name)
         elif res == 2:
-            msg.Prints.warning(f"{tool.get_name()} not cloned, {tool.get_url()} seems not valid", log_fname, CMD_NAME)
+            msg.Prints.warning(f"{tool.get_name()} not cloned, {tool.get_url()} seems not valid",
+                               cmd_name=CMD_NAME, log_file_name=log_file_name)
         elif res == 3:
             # Tool managed 'directly/indirectly'
-            msg.Prints.warning(f"'{tool.get_name()}' is already managed by tman", log_fname, CMD_NAME)
+            msg.Prints.warning(f"'{tool.get_name()}' is already managed by tman",
+                               cmd_name=CMD_NAME, log_file_name=log_file_name)
         elif res == 5:
             # Local file does not exists
-            msg.Prints.warning(f"'{tool.get_name()}' does not exist", log_fname, CMD_NAME)
+            msg.Prints.warning(f"'{tool.get_name()}' does not exist", cmd_name=CMD_NAME, log_file_name=log_file_name)
         elif res == 6:
-            msg.Prints.warning(f"'{tool.get_directory()}' contains repositories that are already managed", log_fname,
-                               CMD_NAME)
+            msg.Prints.warning(f"'{tool.get_directory()}' contains repositories that are already managed",
+                               cmd_name=CMD_NAME, log_file_name=log_file_name)
         else:
             # Possible not managed errors
-            msg.Prints.info(f"ERRCODE {res}...", log_fname, CMD_NAME, icon=False)
+            msg.Prints.info(f"ERRCODE {res}...", show_icon=False, cmd_name=CMD_NAME, log_file_name=log_file_name)
         sys.exit(1)
 
     sys.exit(0)
 
 
-def parse_tools_from_csv(repositories_file: str, default_install_dir: str, assume_yes: bool, log_fname: str) -> list:
+def parse_tools_from_csv(repositories_file: str, default_install_dir: str,
+                         assume_yes: bool, log_file_name: str) -> list:
     """
     Parses the input file and returns a list containing the read tools
 
@@ -175,7 +182,7 @@ def parse_tools_from_csv(repositories_file: str, default_install_dir: str, assum
     :param str repositories_file: path to repositories file
     :param str default_install_dir: path to default installation directory
     :param bool assume_yes: should assume all positive answer to any confirmation prompt?
-    :param str log_fname: log filename
+    :param str log_file_name: log file name
     :return list: repositories list
     """
     # Raise an exception if the provided file does not exist or it's not readable
@@ -224,15 +231,18 @@ def parse_tools_from_csv(repositories_file: str, default_install_dir: str, assum
             # If tool_path != directory, then move the local tool
             if tool_path != dst_dir:
                 if not os.path.exists(tool_path):
-                    msg.Prints.info(f"Cannot add {tool_path}, pathname does not exist.", log_fname, CMD_NAME)
+                    msg.Prints.info(f"Cannot add {tool_path}, pathname does not exist.",
+                                    cmd_name=CMD_NAME, log_file_name=log_file_name)
                     continue
                 if os.path.exists(dst_dir):
-                    msg.Prints.info(f"{dst_dir} exists, what to do?", log_fname, CMD_NAME, icon=False)
+                    msg.Prints.info(f"{dst_dir} exists, what to do?", show_icon=False,
+                                    cmd_name=CMD_NAME, log_file_name=log_file_name)
 
                     # If assume_yes is set, do not prompt anything and overwrite
                     # If assume_yes is not set, then ask for confirmation
                     if assume_yes or click.confirm(msg.Echoes.input(f"Overwrite '{dst_dir}'?")):
-                        msg.Prints.info(f"Moving {tool_path} into {dst_dir}", log_fname, CMD_NAME, icon=False)
+                        msg.Prints.info(f"Moving {tool_path} into {dst_dir}", show_icon=False,
+                                        cmd_name=CMD_NAME, log_file_name=log_file_name)
                         utl_fs.delete_from_fs(dst_dir)
                         utl_fs.move_file(tool_path, dst_dir)
                         tool = LocalFile(dst_dir, tags=tags, add_date=time.time())
@@ -251,7 +261,7 @@ def parse_tools_from_csv(repositories_file: str, default_install_dir: str, assum
     return tools
 
 
-def add_tool(cfg: Config, tool: Tool, log_fname: str) -> int:
+def add_tool(cfg: Config, tool: Tool, log_file_name: str) -> int:
     """
     Add a tool in tman configurations, if automatic_install is set
     then the tool is installed too
@@ -268,7 +278,7 @@ def add_tool(cfg: Config, tool: Tool, log_fname: str) -> int:
 
     :param Tool tool: repository Repository
     :param Config cfg: configuration Config
-    :param str log_fname: log filename
+    :param str log_file_name: log filename
     :return int: status code
     """
     tools_to_delete = []
@@ -308,7 +318,7 @@ def add_tool(cfg: Config, tool: Tool, log_fname: str) -> int:
             cfg.add_tool(tool)
             cfg.save()
             msg.Prints.success(f"Repository '{tool.get_name()}' cloned successfully into {tool.get_directory()}",
-                               log_fname, CMD_NAME)
+                               cmd_name=CMD_NAME, log_file_name=log_file_name)
 
             return 0
 

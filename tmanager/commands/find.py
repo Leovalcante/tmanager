@@ -2,7 +2,7 @@ import click
 import sys
 import tmanager.utilities.commands as utl_cmds
 import tmanager.utilities.dates as utl_dates
-import tmanager.core.messages.messages as msg
+import tmanager.core.messages as msg
 
 CMD_NAME = "find"
 
@@ -39,10 +39,11 @@ def find(ctx: click.core.Context, url: str, tags: str, name: str, type: str, las
     vrb = utl_cmds.get_verbose_from_context(ctx)
 
     # if a filename for logs is provided, then make sure it exists and it's writable.
-    log_fname = ""
+    log_file_name = ""
     if log:
-        log_fname = utl_cmds.validate_log_filename(log, CMD_NAME)
-        if not log_fname:
+        log_file_name = utl_cmds.validate_log_filename(log, CMD_NAME)
+        if not log_file_name:
+            # TODO: Print an error message
             sys.exit(1)
 
     cfg = utl_cmds.get_configs_from_context(ctx)
@@ -61,25 +62,27 @@ def find(ctx: click.core.Context, url: str, tags: str, name: str, type: str, las
 
     else:
         # Retrieve tools that match searching criteria
-        tools = utl_cmds.find_tool(cfg, url=url, tags=tags, name=name, type=type, last_update_date=last_update_date,
-                                   f=True)
+        tools = utl_cmds.find_tool(cfg, url=url, tags=tags, name=name, type=type,
+                                   last_update_date=last_update_date, f=True)
 
     # Total. tools found
     tot = 0
     if tools:
-        msg.Prints.info("Tools found:", log_fname, CMD_NAME)
+        msg.Prints.info("Tools found:", cmd_name=CMD_NAME, log_file_name=log_file_name)
         for tool in tools:
-            msg.Prints.info(str(tool) if not vrb else tool.__str__(vrb), log_fname, CMD_NAME, icon=False)
+            msg.Prints.info(str(tool) if not vrb else tool.__str__(vrb), show_icon=False,
+                            cmd_name=CMD_NAME, log_file_name=log_file_name)
             tot += 1
 
     if not all:
         # Print summary if all is set
-        msg.Prints.info(f"Found {tot}/{len(cfg.get_tools())} tools", log_fname, CMD_NAME, icon=False)
+        msg.Prints.info(f"Found {tot}/{len(cfg.get_tools())} tools", show_icon=False,
+                        cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     elif tot != 0:
-        msg.Prints.info(f"Tot tools: {len(tools)}", log_fname, CMD_NAME, icon=False)
+        msg.Prints.info(f"Tot tools: {len(tools)}", show_icon=False, cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     else:
         # The case where all is set, and there's no tool registered
-        msg.Prints.info("Nothing found", log_fname, CMD_NAME)
+        msg.Prints.info("Nothing found", cmd_name=CMD_NAME, log_file_name=log_file_name)
     sys.exit(0)

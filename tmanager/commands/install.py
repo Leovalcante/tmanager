@@ -3,7 +3,7 @@ import sys
 import tmanager.utilities.dates as utl_dates
 import tmanager.utilities.file_system as utl_fs
 import tmanager.utilities.commands as utl_cmds
-import tmanager.core.messages.messages as msg
+import tmanager.core.messages as msg
 from tmanager.core.tool.repository.repository import Repository
 
 CMD_NAME = "install"
@@ -34,18 +34,19 @@ def install(ctx: click.core.Context, name: str, repo_url: str, all: bool, log: s
         sys.exit(1)
 
     # if a filename for logs is provided, then make sure it exists and it's writable.
-    log_fname = ""
+    log_file_name = ""
     if log:
-        log_fname = utl_cmds.validate_log_filename(log, CMD_NAME, assume_yes)
-        if not log_fname:
+        log_file_name = utl_cmds.validate_log_filename(log, CMD_NAME, assume_yes)
+        if not log_file_name:
+            # TODO: print an error message
             sys.exit(1)
 
-    install_repository(ctx, name, repo_url, all, assume_yes, log_fname)
+    install_repository(ctx, name, repo_url, all, assume_yes, log_file_name)
     sys.exit(0)
 
 
-def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: bool, assume_yes: bool,
-                       log_fname: str) -> int:
+def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: bool,
+                       assume_yes: bool, log_file_name: str) -> int:
     """
     Install a tool by name, url, or install every managed tool
     This method returns 0 when it terminates successfully, otherwise
@@ -58,7 +59,7 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
     :param str repo_url: tool repository url
     :param bool _all: should install every tool?
     :param bool assume_yes: should assume positive answer to any confirmation prompt?
-    :param str log_fname: log filename
+    :param str log_file_name: log filename
     :return int: status code
     """
     cfg = utl_cmds.get_configs_from_context(ctx)
@@ -80,7 +81,7 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
 
     # If there's no tool to install, display error message and return
     if len(tools) == 0:
-        msg.Prints.warning("There's no tool to install", log_fname, CMD_NAME)
+        msg.Prints.warning("There's no tool to install", cmd_name=CMD_NAME, log_file_name=log_file_name)
         return 1
 
     # Install any tool that matches the criteria
@@ -96,7 +97,8 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
             tot_installed += 1
 
             if not _all:
-                msg.Prints.info(f"'{tool.get_name()}' cloned successfully", log_fname, CMD_NAME)
+                msg.Prints.info(f"'{tool.get_name()}' cloned successfully",
+                                cmd_name=CMD_NAME, log_file_name=log_file_name)
 
             # append the tool name to the installed toolnames list
             installed.append(tool.get_name())
@@ -119,9 +121,9 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
             # NOTE: please wait before modifying this block of code!!!
             if choice == "2":
                 # Delete and clone the repo
-                msg.Prints.info(f"removing '{tool.get_name()}'..", log_fname, CMD_NAME)
+                msg.Prints.info(f"removing '{tool.get_name()}'..", cmd_name=CMD_NAME, log_file_name=log_file_name)
                 utl_fs.delete_from_fs(tool.get_directory())
-                msg.Prints.info(f"cloning '{tool.get_name()}'..", log_fname, CMD_NAME)
+                msg.Prints.info(f"cloning '{tool.get_name()}'..", cmd_name=CMD_NAME, log_file_name=log_file_name)
                 tool.clone()
                 # Update repo install date and last-update-date
                 tool.update_timestamps()
@@ -130,8 +132,8 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
 
             elif choice == "3":
                 # Just update the repo content
-                msg.Prints.info(f"updating '{tool.get_name()}'.. this may take a while.", log_fname, CMD_NAME,
-                                icon=False)
+                msg.Prints.info(f"updating '{tool.get_name()}'.. this may take a while.", show_icon=False,
+                                cmd_name=CMD_NAME, log_file_name=log_file_name)
                 res = tool.update()
 
                 if tool.get_install_date() is None:
@@ -140,12 +142,14 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
                 tool.set_last_update_date(utl_dates.now())
                 cfg.update_tool(tool)
                 if res == 0:
-                    msg.Prints.info(f"'{tool.get_name()}' updates successfully", log_fname, CMD_NAME)
+                    msg.Prints.info(f"'{tool.get_name()}' updates successfully",
+                                    cmd_name=CMD_NAME, log_file_name=log_file_name)
                 elif res == 1:
-                    msg.Prints.info(f"'{tool.get_name()}' is already up-to-date", log_fname, CMD_NAME)
+                    msg.Prints.info(f"'{tool.get_name()}' is already up-to-date",
+                                    cmd_name=CMD_NAME, log_file_name=log_file_name)
                 else:
                     msg.Prints.info(f"An unexpected error has occurred when trying to update {tool.get_name()}",
-                                    log_fname, CMD_NAME)
+                                    cmd_name=CMD_NAME, log_file_name=log_file_name)
             else:
                 # Choice (1): just continue
                 continue
@@ -153,7 +157,7 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
     if _all:
         msg.Prints.info(
             f"Installed {'' if tot_installed == 0 else f'{str(installed)}, '}{tot_installed}/{len(tools)} tools",
-            log_fname, CMD_NAME, icon=False)
+            show_icon=False, cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     cfg.save()
     return 0
