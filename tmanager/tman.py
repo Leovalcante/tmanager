@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import click
 from tmanager import __version__, __name_desc__
-from tmanager.core.config.config import Config
+from tmanager.core.config import Config
 from tmanager.commands.add import add
 from tmanager.commands.install import install
 from tmanager.commands.update import update
