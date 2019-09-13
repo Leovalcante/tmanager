@@ -6,7 +6,7 @@ import git
 import tmanager.core.messages as msg
 import tmanager.utilities.file_system as utl_fs
 from srblib import abs_path
-from tmanager.core.config.config import Config
+from tmanager.core.config import Config
 
 
 # TODO: give a more clear name to "f"
