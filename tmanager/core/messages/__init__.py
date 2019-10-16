@@ -1,7 +1,7 @@
+import datetime
 from typing import Optional
 
 import click
-import datetime
 
 ICON_ERROR = "[!!]"
 ICON_ALERT = "[!]"
