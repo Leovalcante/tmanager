@@ -1,10 +1,10 @@
-import click
 import sys
-import tmanager.utilities.dates as utl_dates
-import tmanager.utilities.file_system as utl_fs
-import tmanager.utilities.commands as utl_cmds
-import tmanager.core.messages as msg
-from tmanager.core.tool.repository.repository import Repository
+
+import click
+
+from tmanager.core import messages as msg
+from tmanager.core.tool.repository import Repository
+from tmanager.utilities import commands as utl_cmd, dates as utl_dates, file_system as utl_fs
 
 CMD_NAME = "install"
 
@@ -30,13 +30,13 @@ def install(ctx: click.core.Context, name: str, repo_url: str, all: bool, log: s
     :return: None
     """
     if not name and not repo_url and not all:
-        utl_cmds.usage_error(CMD_NAME)
+        utl_cmd.usage_error(CMD_NAME)
         sys.exit(1)
 
     # if a filename for logs is provided, then make sure it exists and it's writable.
     log_file_name = ""
     if log:
-        log_file_name = utl_cmds.validate_log_filename(log, CMD_NAME, assume_yes)
+        log_file_name = utl_cmd.validate_log_filename(log, CMD_NAME, assume_yes)
         if not log_file_name:
             # TODO: print an error message
             sys.exit(1)
@@ -62,15 +62,15 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
     :param str log_file_name: log filename
     :return int: status code
     """
-    cfg = utl_cmds.get_configs_from_context(ctx)
+    cfg = utl_cmd.get_configs_from_context(ctx)
 
     if name:
         # Find tools by name
-        tools = utl_cmds.find_tool(cfg, name=name)
+        tools = utl_cmd.find_tool(cfg, name=name)
 
     elif repo_url:
         # Find tools by URL
-        tools = utl_cmds.find_tool(cfg, url=repo_url)
+        tools = utl_cmd.find_tool(cfg, url=repo_url)
 
     elif _all:
         # Retrieve all the tools

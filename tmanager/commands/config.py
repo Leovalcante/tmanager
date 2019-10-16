@@ -1,13 +1,13 @@
-import click
 import os
-import sys
 import shutil
-import tmanager.core.messages as msg
-import tmanager.utilities.commands as utl_cmds
-import tmanager.utilities.file_system as utl_fs
-from tmanager.core.config import Config
+import sys
+
+import click
 from crontab import CronTab, CronItem
-from srblib import abs_path
+
+from tmanager.core import messages as msg
+from tmanager.core.config import Config
+from tmanager.utilities import commands as utl_cmd, file_system as utl_fs
 
 _available_automatic_install_true_arguments = ["true", "on", "yes"]
 _available_automatic_install_false_arguments = ["false", "off", "no"]
@@ -48,8 +48,8 @@ def config(ctx: click.core.Context, default_dir: str, auto_install: str, cron_jo
     #         sys.exit(1)
 
     # Get configurations and verbose
-    cfg = utl_cmds.get_configs_from_context(ctx)
-    vrb = utl_cmds.get_verbose_from_context(ctx)
+    cfg = utl_cmd.get_configs_from_context(ctx)
+    vrb = utl_cmd.get_verbose_from_context(ctx)
 
     # Check if user is root and ask confirmation to continue, if so
     msg.Prints.verbose("Check user role", vrb)
@@ -182,7 +182,7 @@ def _cron_job_create_update(cfg: Config, cron_job: str, cron: CronTab, vrb: bool
             msg.Prints.info("You are going to be prompted by Tman Job Wizard in order to update your job")
             cron.remove(job)
         else:
-            msg.Prints.warning(f"@@@ Update aborted by {utl_cmds.get_user_login()}")
+            msg.Prints.warning(f"@@@ Update aborted by {utl_cmd.get_user_login()}")
             raise click.Abort()
 
     elif not cron_list and cron_job == "update":
@@ -190,7 +190,7 @@ def _cron_job_create_update(cfg: Config, cron_job: str, cron: CronTab, vrb: bool
         create_cron_job = click.confirm(msg.Echoes.input("Do you want to create a new cron job"), default=True)
 
         if not create_cron_job:
-            msg.Prints.warning(f"@@@ Creation aborted by {utl_cmds.get_user_login()}")
+            msg.Prints.warning(f"@@@ Creation aborted by {utl_cmd.get_user_login()}")
             raise click.Abort()
 
     # Start the cron job creation wizard if not update
@@ -240,7 +240,7 @@ def _cron_job_create_update(cfg: Config, cron_job: str, cron: CronTab, vrb: bool
         msg.Prints.success("@@@ Cron job saved!")
         # msg.Prints.success("@@@ The Wizard has finally accomplished his quest successfully, now he will go away! @@@")
     else:
-        msg.Prints.warning(f"@@@ Creation aborted by {utl_cmds.get_user_login()}")
+        msg.Prints.warning(f"@@@ Creation aborted by {utl_cmd.get_user_login()}")
         raise click.Abort()
 
 
@@ -391,7 +391,7 @@ def _get_cron_job_data(cfg: Config) -> list:
 
     # if a filename for logging has been provided by the user, do the required checks and prompt the user when needed
     if log != default_logfile:
-        log = utl_cmds.validate_log_filename(log, CMD_NAME)
+        log = utl_cmd.validate_log_filename(log, CMD_NAME)
         if not log:
             # TODO: print an error message
             sys.exit(1)
@@ -523,7 +523,7 @@ def _set_new_default_dir(default_dir: str, cfg: Config, vrb: bool) -> None:
     :return: None
     """
     # Get the absolute path of new default installation directory
-    default_dir = abs_path(default_dir)
+    default_dir = utl_fs.get_abs_path(default_dir)
 
     msg.Prints.verbose("Change default installation directory selected", vrb)
 

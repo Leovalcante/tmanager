@@ -1,7 +1,9 @@
-import click
 import sys
-import tmanager.utilities.commands as utl_cmds
-import tmanager.core.messages as msg
+
+import click
+
+from tmanager.core import messages as msg
+from tmanager.utilities import commands as utl_cmd
 
 CMD_NAME = "update"
 
@@ -27,25 +29,25 @@ def update(ctx: click.core.Context, name: str, repo_url: str, all: bool, log: st
     :return: None
     """
     if not name and not repo_url and not all:
-        utl_cmds.usage_error(CMD_NAME)
+        utl_cmd.usage_error(CMD_NAME)
         sys.exit(1)
 
     # if a filename for logs is provided, then make sure it exists and it's writable.
     log_file_name = ""
     if log:
-        log_file_name = utl_cmds.validate_log_filename(log, CMD_NAME, assume_yes)
+        log_file_name = utl_cmd.validate_log_filename(log, CMD_NAME, assume_yes)
         if not log_file_name:
             sys.exit(1)
 
-    cfg = utl_cmds.get_configs_from_context(ctx)
+    cfg = utl_cmd.get_configs_from_context(ctx)
 
     if name:
         # Update by name
-        repos = utl_cmds.find_tool(cfg, name=name)
+        repos = utl_cmd.find_tool(cfg, name=name)
 
     elif repo_url:
         # Update by URL
-        repos = utl_cmds.find_tool(cfg, url=repo_url)
+        repos = utl_cmd.find_tool(cfg, url=repo_url)
 
     else:
         # Update everything

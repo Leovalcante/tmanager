@@ -1,15 +1,16 @@
-import click
 import os
 import sys
+import tempfile
 import time
 import zipfile
-import tempfile
-import tmanager.utilities.file_system as utl_fs
-import tmanager.utilities.commands as utl_cmds
-import tmanager.core.messages as msg
+
+import click
+
+from tmanager.core import messages as msg
 from tmanager.core.config import Config
-from tmanager.core.tool.repository.repository import Repository
-from tmanager.core.tool.localfile.localfile import LocalFile
+from tmanager.core.tool.localfile import LocalFile
+from tmanager.core.tool.repository import Repository
+from tmanager.utilities import commands as utl_cmd, file_system as utl_fs
 
 CMD_NAME = "import_config"
 
@@ -46,7 +47,7 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
     # if a filename for logs is provided, then make sure it exists and it's writable.
     log_file_name = ""
     if log:
-        log_file_name = utl_cmds.validate_log_filename(log, CMD_NAME, assume_yes)
+        log_file_name = utl_cmd.validate_log_filename(log, CMD_NAME, assume_yes)
         if not log_file_name:
             sys.exit(1)
 
@@ -58,7 +59,7 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
             if t in ["git", "local"]:
                 import_types.add(t)
     import_types = list(import_types)
-    import_tags = utl_cmds.sanitize_tags(tags)
+    import_tags = utl_cmd.sanitize_tags(tags)
 
     # Validate input filename
     if not utl_fs.is_writable(infile):
@@ -115,7 +116,7 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
                           import_types=import_types if types else None, import_tags=import_tags if tags else None)
 
     else:
-        msg.Prints.info("Importing tools, this may take a while...", log_file_name, CMD_NAME)
+        msg.Prints.info("Importing tools, this may take a while...", cmd_name=CMD_NAME, log_file_name=log_file_name)
         _import_conf_file(managed_tools, new_cfg, f"{tmp_dir}/conf.tman", assume_yes, log_file_name,
                           import_types=import_types if types else None, import_tags=import_tags if tags else None)
         _import_tools_from_archive(new_cfg, f"{tmp_dir}{'/' if not tmp_dir.endswith('/') else ''}",
@@ -161,7 +162,7 @@ def _import_conf_file(all_tools: list, new_cfg: Config, input_conf: str, assume_
                     r = val.split("-", 1)
                     if r[1] in ["True", "False"]:
                         # Convert JSON "True/False" into True/False
-                        r[1] = True if r[1] == "True" else False
+                        r[1] = True if r[1] == "True" else False  # TODO: this could be improved
 
                     # Set the property
                     new_cfg[r[0]] = r[1]
@@ -169,7 +170,7 @@ def _import_conf_file(all_tools: list, new_cfg: Config, input_conf: str, assume_
             else:
                 # Other line: Tool representation
                 dict_repo = {}
-                line, tags = utl_cmds.remove_tags(line)
+                line, tags = utl_cmd.remove_tags(line)
 
                 # skip tools that have no matching tag name
                 if import_tags:

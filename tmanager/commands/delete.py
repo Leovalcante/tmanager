@@ -1,9 +1,10 @@
-import click
 import sys
-import tmanager.core.messages as msg
-import tmanager.utilities.commands as utl_cmds
-import tmanager.utilities.file_system as utl_fs
+
+import click
+
+from tmanager.core import messages as msg
 from tmanager.core.config import Config
+from tmanager.utilities import commands as utl_cmd, file_system as utl_fs
 
 CMD_NAME = "delete"
 
@@ -28,16 +29,16 @@ def delete(ctx: click.core.Context, name: str, input_file: str, all: bool, log: 
     :param bool assume_yes: assume yes as the answer for any user prompt
     :return: None
     """
-    cfg = utl_cmds.get_configs_from_context(ctx)
+    cfg = utl_cmd.get_configs_from_context(ctx)
     # Make sure that at least one options is set
     if not (bool(name) ^ bool(input_file) ^ bool(all)):
-        utl_cmds.usage_error(CMD_NAME)
+        utl_cmd.usage_error(CMD_NAME)
         sys.exit(1)
 
     # if a filename for logs is provided, then make sure it exists and it's writable.
     log_file_name = ""
     if log:
-        log_file_name = utl_cmds.validate_log_filename(log, CMD_NAME, assume_yes)
+        log_file_name = utl_cmd.validate_log_filename(log, CMD_NAME, assume_yes)
         if not log_file_name:
             # TODO: print an error message
             sys.exit(1)
@@ -50,7 +51,7 @@ def delete(ctx: click.core.Context, name: str, input_file: str, all: bool, log: 
     # Retrieve every tool that has to be removed
     if name:
         # Search by name
-        tools_to_delete += utl_cmds.find_tool(cfg, name=name)
+        tools_to_delete += utl_cmd.find_tool(cfg, name=name)
 
     elif input_file:
         # Read tool names from file (one per line)
@@ -60,7 +61,7 @@ def delete(ctx: click.core.Context, name: str, input_file: str, all: bool, log: 
                     tool_name = tool_name.strip()
 
                     # Retrieve repos by tool_name
-                    tools_to_delete += utl_cmds.find_tool(cfg, name=tool_name)
+                    tools_to_delete += utl_cmd.find_tool(cfg, name=tool_name)
 
         except FileNotFoundError:
             raise click.BadOptionUsage("--input-file",
@@ -139,7 +140,7 @@ def _delete_all(cfg: Config, deleted_tools: list, assume_yes: bool, log_file_nam
         tool_to_save_indexes = click.prompt(">>> ", 'no')
         if tool_to_save_indexes and tool_to_save_indexes.lower() not in ["no", "n", "quit", "q", "none"]:
             # Check if they're all valid numbers
-            to_delete = utl_cmds.sanitize_indexes(deleted_tools, tool_to_save_indexes)
+            to_delete = utl_cmd.sanitize_indexes(deleted_tools, tool_to_save_indexes)
 
             # Delete valid number repos
             for index in to_delete:

@@ -1,15 +1,15 @@
-import click
-import os
 import fnmatch
+import os
 import sys
-import time
 import threading
-import git
-import tmanager.core.messages as msg
-import tmanager.utilities.file_system as utl_fs
-import tmanager.utilities.commands as utl_cmds
+import time
 
-from tmanager.core.tool.repository.repository import Repository
+import click
+import git
+
+from tmanager.core import messages as msg
+from tmanager.core.tool.repository import Repository
+from tmanager.utilities import commands as utl_cmd, file_system as utl_fs
 
 
 @click.command(options_metavar="", short_help="Scan filesystem seeking repositories.")
@@ -27,8 +27,8 @@ def scan(ctx: click.core.Context, root_dir: str) -> None:
     :return: None
     """
     # Get configuration object and verbose
-    cfg = utl_cmds.get_configs_from_context(ctx)
-    vrb = utl_cmds.get_verbose_from_context(ctx)
+    cfg = utl_cmd.get_configs_from_context(ctx)
+    vrb = utl_cmd.get_verbose_from_context(ctx)
 
     # Set initial variable value
     root_dir = root_dir or utl_fs.get_home_env()
@@ -97,9 +97,9 @@ def scan(ctx: click.core.Context, root_dir: str) -> None:
                 msg.Prints.verbose("Validate all user input indexes", vrb)
 
                 # Sanitize input
-                chosen_indexes = utl_cmds.sanitize_indexes(repos_list, chosen_indexes)
+                chosen_indexes = utl_cmd.sanitize_indexes(repos_list, chosen_indexes)
 
-                msg.Prints.verbose("Indexes sanitized: {chosen_indexes}", vrb)
+                msg.Prints.verbose(f"Indexes sanitized: {chosen_indexes}", vrb)
 
                 # If there are any indexes after index sanitize
                 if chosen_indexes:

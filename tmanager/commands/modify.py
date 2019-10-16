@@ -1,10 +1,11 @@
-import click
 import sys
-import tmanager.core.messages as msg
-import tmanager.utilities.commands as utl_cmds
-import tmanager.utilities.file_system as utl_fs
+
+import click
+
+from tmanager.core import messages as msg
 from tmanager.core.config import Config
-from tmanager.core.tool.tool import Tool
+from tmanager.core.tool import Tool
+from tmanager.utilities import commands as utl_cmd, file_system as utl_fs
 
 CMD_NAME = "modify"
 
@@ -34,19 +35,19 @@ def modify(ctx: click.core.Context, name: str, new_dir: str, tag_add: str, tag_r
     """
     # Make sure that at least one option have been specified
     if not (bool(new_dir) or bool(tag_add) or bool(tag_rm) or bool(tag_mv)):
-        utl_cmds.usage_error(CMD_NAME)
+        utl_cmd.usage_error(CMD_NAME)
         sys.exit(1)
 
     # if a filename for logs is provided, then make sure it exists and it's writable.
     log_file_name = ""
     if log:
-        log_file_name = utl_cmds.validate_log_filename(log, CMD_NAME)
+        log_file_name = utl_cmd.validate_log_filename(log, CMD_NAME)
         if not log_file_name:
             sys.exit(1)
 
     # Load the config. file and set verbose
-    cfg = utl_cmds.get_configs_from_context(ctx)
-    vrb = utl_cmds.get_verbose_from_context(ctx)
+    cfg = utl_cmd.get_configs_from_context(ctx)
+    vrb = utl_cmd.get_verbose_from_context(ctx)
 
     msg.Prints.verbose(f"Retrieving tool {name}", vrb, cmd_name=CMD_NAME, log_file_name=log_file_name)
 
@@ -105,7 +106,7 @@ def modify(ctx: click.core.Context, name: str, new_dir: str, tag_add: str, tag_r
     if tag_add:
         msg.Prints.verbose(f"Adding tags to {tool.get_name()}", vrb, cmd_name=CMD_NAME, log_file_name=log_file_name)
 
-        tmp_tags = utl_cmds.sanitize_tags(tag_add)
+        tmp_tags = utl_cmd.sanitize_tags(tag_add)
         msg.Prints.verbose(f"Following tags will be added: {tmp_tags}", vrb,
                            cmd_name=CMD_NAME, log_file_name=log_file_name)
 
@@ -129,7 +130,7 @@ def modify(ctx: click.core.Context, name: str, new_dir: str, tag_add: str, tag_r
     if tag_rm:
         msg.Prints.verbose(f"Removing tags to {tool.get_name()}", vrb, cmd_name=CMD_NAME, log_file_name=log_file_name)
 
-        tmp_tags = utl_cmds.sanitize_tags(tag_rm)
+        tmp_tags = utl_cmd.sanitize_tags(tag_rm)
         msg.Prints.verbose(f"Following tags will be removed: {tmp_tags}", vrb,
                            cmd_name=CMD_NAME, log_file_name=log_file_name)
 

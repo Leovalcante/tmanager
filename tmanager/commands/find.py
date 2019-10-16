@@ -1,8 +1,9 @@
-import click
 import sys
-import tmanager.utilities.commands as utl_cmds
-import tmanager.utilities.dates as utl_dates
-import tmanager.core.messages as msg
+
+import click
+
+from tmanager.core import messages as msg
+from tmanager.utilities import commands as utl_cmd, dates as utl_dates
 
 CMD_NAME = "find"
 
@@ -36,17 +37,17 @@ def find(ctx: click.core.Context, url: str, tags: str, name: str, type: str, las
     if not all and (not url and not tags and not name and not type and not last_update_date):
         all = True
 
-    vrb = utl_cmds.get_verbose_from_context(ctx)
+    vrb = utl_cmd.get_verbose_from_context(ctx)
 
     # if a filename for logs is provided, then make sure it exists and it's writable.
     log_file_name = ""
     if log:
-        log_file_name = utl_cmds.validate_log_filename(log, CMD_NAME)
+        log_file_name = utl_cmd.validate_log_filename(log, CMD_NAME)
         if not log_file_name:
             # TODO: Print an error message
             sys.exit(1)
 
-    cfg = utl_cmds.get_configs_from_context(ctx)
+    cfg = utl_cmd.get_configs_from_context(ctx)
 
     # Convert the date to epoch time if it's not None
     if last_update_date:
@@ -62,8 +63,8 @@ def find(ctx: click.core.Context, url: str, tags: str, name: str, type: str, las
 
     else:
         # Retrieve tools that match searching criteria
-        tools = utl_cmds.find_tool(cfg, url=url, tags=tags, name=name, type=type,
-                                   last_update_date=last_update_date, f=True)
+        tools = utl_cmd.find_tool(cfg, url=url, tags=tags, name=name, type=type,
+                                  last_update_date=last_update_date, f=True)
 
     # Total. tools found
     tot = 0

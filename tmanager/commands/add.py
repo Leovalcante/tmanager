@@ -1,16 +1,15 @@
 import os
 import sys
-import click
 import time
-import tmanager.core.messages as msg
-import tmanager.utilities.commands as utl_cmds
-import tmanager.utilities.file_system as utl_fs
 
-from srblib import abs_path
-from tmanager.core.tool.repository.repository import Repository
-from tmanager.core.tool.localfile.localfile import LocalFile
-from tmanager.core.tool.tool import Tool
+import click
+
+from tmanager.core import messages as msg
 from tmanager.core.config import Config
+from tmanager.core.tool import Tool
+from tmanager.core.tool.localfile import LocalFile
+from tmanager.core.tool.repository import Repository
+from tmanager.utilities import commands as utl_cmd, file_system as utl_fs
 
 CMD_NAME = "add"
 
@@ -40,19 +39,19 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
     """
     # If neither in_file nor repo_url is provided (or if they're bot provided), then display the usage and quit
     if not (bool(in_file) != bool(tool)):
-        utl_cmds.usage_error(CMD_NAME)
+        utl_cmd.usage_error(CMD_NAME)
         sys.exit(1)
 
     # if a filename for logs is provided, then make sure it exists and it's writable.
     log_file_name = ""
     if log:
-        log_file_name = utl_cmds.validate_log_filename(log, CMD_NAME, assume_yes)
+        log_file_name = utl_cmd.validate_log_filename(log, CMD_NAME, assume_yes)
         if not log_file_name:
             # TODO: print an error
             sys.exit(1)
 
     # Load the configuration file
-    cfg = utl_cmds.get_configs_from_context(ctx)
+    cfg = utl_cmd.get_configs_from_context(ctx)
 
     # Add tools from CSV
     imported_tools = 0
@@ -70,13 +69,13 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
         default_dir = cfg.get_default_installation_directory()
 
         # Sanitize the tag string
-        tags = utl_cmds.sanitize_tags(tags)
+        tags = utl_cmd.sanitize_tags(tags)
 
         # Set installation directory
         directory = install_dir or default_dir
 
         # Add a trailing slash if required
-        directory = utl_fs.trailing_slash(abs_path(directory))
+        directory = utl_fs.trailing_slash(utl_fs.get_abs_path(directory))
 
         # If the provided directory doesn't exist or it's not writable, then quit
         if not utl_fs.is_writable(directory):
@@ -85,7 +84,7 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
             sys.exit(1)
 
         # Check whether the tool is a repository or a local file
-        if utl_cmds.is_git_url(url):
+        if utl_cmd.is_git_url(url):
             # Repository
             tool = Repository(url, directory, tags=tags, add_date=time.time())
         else:
@@ -212,19 +211,19 @@ def parse_tools_from_csv(repositories_file: str, default_install_dir: str,
             if not t.startswith("d="):
                 tags_str += f"{t},"     # Last trailing comma will be removed by sanitize tags
 
-        tags = utl_cmds.sanitize_tags(tags_str)
+        tags = utl_cmd.sanitize_tags(tags_str)
 
         # Get destination directory
         directory = default_install_dir
         if res[-1].startswith("d="):
-            directory = abs_path(res[-1].split("=")[1])
+            directory = utl_fs.get_abs_path(res[-1].split("=")[1])
             directory = utl_fs.trailing_slash(directory)
 
         dst_dir = directory + utl_fs.get_file_name(url)
 
         # Instantiate a Tool object, depending on it's kind
         tool = None
-        if utl_cmds.is_git_url(url):
+        if utl_cmd.is_git_url(url):
             tool = Repository(url, directory, tags=tags, add_date=time.time())
         else:
             tool_path = url

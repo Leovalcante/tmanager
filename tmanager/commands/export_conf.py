@@ -1,13 +1,14 @@
-import click
 import os
 import sys
-import zipfile
 import tempfile
 import time
-import tmanager.utilities.file_system as utl_fs
-import tmanager.utilities.commands as utl_cmds
-import tmanager.core.messages as msg
-from tmanager.core.tool.localfile.localfile import LocalFile
+import zipfile
+
+import click
+
+from tmanager.core import messages as msg
+from tmanager.core.tool.localfile import LocalFile
+from tmanager.utilities import commands as utl_cmd, file_system as utl_fs
 
 CMD_NAME = "export_config"
 
@@ -49,13 +50,13 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
     # if a filename for logs is provided, then make sure it exists and it's writable.
     log_file_name = ""
     if log:
-        log_file_name = utl_cmds.validate_log_filename(log, CMD_NAME, assume_yes)
+        log_file_name = utl_cmd.validate_log_filename(log, CMD_NAME, assume_yes)
         if not log_file_name:
             # TODO: print an error message
             sys.exit(1)
 
     # Retrieve the configuration file if it exists, otherwise start the configuration wizard
-    configs = utl_cmds.get_configs_from_context(ctx)
+    configs = utl_cmd.get_configs_from_context(ctx)
 
     # Validate outfile pathname
     res = _validate_pathname(outfile, log_file_name)
@@ -80,11 +81,11 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
     tools_to_export = []
     if types or tags:
         if types and tags:
-            tools_to_export = utl_cmds.find_tool(configs, tags=tags, type=types)
+            tools_to_export = utl_cmd.find_tool(configs, tags=tags, type=types)
         elif types:
-            tools_to_export = utl_cmds.find_tool(configs, type=types)
+            tools_to_export = utl_cmd.find_tool(configs, type=types)
         else:
-            tools_to_export = utl_cmds.find_tool(configs, tags=tags)
+            tools_to_export = utl_cmd.find_tool(configs, tags=tags)
     elif exp_all:
         tools_to_export = configs.get_tools()
     elif exp_local:
