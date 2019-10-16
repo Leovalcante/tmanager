@@ -1,23 +1,14 @@
-#!/usr/bin/env python3
+import importlib
+
 import click
-from tmanager import __version__, __name_desc__
+
+from tmanager import version, name_desc
 from tmanager.core.config import Config
-from tmanager.commands.add import add
-from tmanager.commands.install import install
-from tmanager.commands.update import update
-from tmanager.commands.find import find
-from tmanager.commands.config import config
-from tmanager.commands.delete import delete
-from tmanager.commands.modify import modify
-from tmanager.commands.scan import scan
-from tmanager.commands.export_conf import export_conf
-from tmanager.commands.import_conf import import_conf
 
 
-# CLICK COMMANDS
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
 @click.option("-v", "--verbose", is_flag=True, help="Execute command in verbose mode.")
-@click.version_option(__version__, "-V", "--version", prog_name=__name_desc__,)
+@click.version_option(version, "-V", "--version", prog_name=name_desc, )
 @click.pass_context
 def tman(ctx: click.core.Context, verbose: bool) -> None:
     """
@@ -44,17 +35,23 @@ def tman(ctx: click.core.Context, verbose: bool) -> None:
     ctx.obj["verbose"] = verbose
 
 
-# Add tman commands
-tman.add_command(add)
-tman.add_command(install)
-tman.add_command(update)
-tman.add_command(find)
-tman.add_command(config)
-tman.add_command(delete)
-tman.add_command(modify)
-tman.add_command(scan)
-tman.add_command(import_conf)
-tman.add_command(export_conf)
+# Dynamically add tman commands
+commands = [
+    'add',
+    'install',
+    'update',
+    'find',
+    'config',
+    'delete',
+    'modify',
+    'scan',
+    'import_conf',
+    'export_conf'
+]
+for command in commands:
+    module = importlib.import_module(f'tmanager.commands.{command}')
+    command_function = getattr(module, command)
+    tman.add_command(command_function)
 
 
 # MAIN
