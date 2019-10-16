@@ -1,13 +1,14 @@
-import os
 import json
+import os
 from typing import Optional
 
 import click
-import tmanager.core.messages as msg
-from tmanager.core.tool.tool import Tool
-from tmanager.core.tool.repository.repository import Repository
-from tmanager.core.tool.localfile.localfile import LocalFile
-import tmanager.utilities.file_system as utl_fs
+
+from tmanager.core import messages as msg
+from tmanager.core.tool import Tool
+from tmanager.core.tool.localfile import LocalFile
+from tmanager.core.tool.repository import Repository
+from tmanager.utilities import file_system as utl_fs  # TODO: remove utils import in class
 
 
 class Config(dict):
