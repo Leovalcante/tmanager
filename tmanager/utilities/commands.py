@@ -1,17 +1,15 @@
-import click
 import os
 
+import click
 import git
 
-import tmanager.core.messages as msg
-import tmanager.utilities.file_system as utl_fs
-from srblib import abs_path
+from tmanager.core import messages as msg
 from tmanager.core.config import Config
+from tmanager.utilities import file_system as utl_fs
 
 
-# TODO: give a more clear name to "f"
 def find_tool(cfg: Config, url: str = None, tags: str = None, name: str = None, type: str = None,
-              last_update_date: str = None, f: bool = False) -> list:
+              last_update_date: str = None, f: bool = False) -> list:  # TODO: give a more clear name to "f"
     """
     Returns the list of Tools that match all the provided input criteria.
 
@@ -231,6 +229,7 @@ def _make_it_list(args: list) -> list:
 
 
 def usage_error(cmd_name):
+    # TODO: this shouldn't be there
     msg.Prints.info("Usage error: tman [OPTIONS] command [ARGS]")
     msg.Prints.info(f"Run 'tman {cmd_name} --help' to see options", show_icon=False)
 
@@ -252,7 +251,7 @@ def validate_log_filename(filename: str, cmd_name: str, assume_yes: bool = False
     if utl_fs.is_writable(filename) and os.path.isfile(filename):
         if not assume_yes and not click.confirm(f"'{filename}' exists, overwrite?"):
             return log_file_name
-        log_file_name = abs_path(filename)
+        log_file_name = utl_fs.get_abs_path(filename)
     # if it's not writable or it doesn't exist or it's a directory, then quit
     elif os.path.exists(filename):
         msg.Prints.warning(f"file {filename} doesn't exist or it's not writable",
@@ -270,7 +269,7 @@ def validate_log_filename(filename: str, cmd_name: str, assume_yes: bool = False
         except FileNotFoundError:
             msg.Prints.warning("please enter a valid pathname", cmd_name=cmd_name, log_file_name=log_file_name)
             return log_file_name
-        log_file_name = abs_path(filename)
+        log_file_name = utl_fs.get_abs_path(filename)
 
     return log_file_name
 
