@@ -1,5 +1,7 @@
+import os
+import time
+
 from tmanager.core.tool import Tool
-from tmanager.utilities import dates as utl_dates, file_system as utl_fs  # TODO: remove utils import in class
 
 
 class LocalFile(Tool):
@@ -62,7 +64,7 @@ class LocalFile(Tool):
         tool_desc += f"directory: {self.get_directory()}"
         if verbose:
             tool_desc += f"add date: " \
-                f"{'' if self.get_add_date() is None else utl_dates.time_to_ctime(self.get_add_date())}\n"
+                f"{'' if self.get_add_date() is None else time.ctime(self.get_add_date())}\n"
         else:
             tool_desc += "\n"
 
@@ -74,7 +76,7 @@ class LocalFile(Tool):
 
         :return bool: True if the tool is present, False otherwise
         """
-        if utl_fs.exists_pathname(self._directory):
+        if os.path.exists(self._directory):
             return True
 
         return False
