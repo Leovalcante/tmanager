@@ -12,7 +12,7 @@ class LocalFile(Tool):
                  tags: list = None,
                  add_date: float = None,
                  install_date: float = None,
-                 last_update_date: float = None):
+                 last_update_date: float = None) -> None:
         """
         Initialize Local File.
 
@@ -70,7 +70,7 @@ class LocalFile(Tool):
 
         return tool_desc
 
-    def is_installed(self):
+    def is_installed(self) -> bool:
         """
         Check if the local file is on the file system or not.
 

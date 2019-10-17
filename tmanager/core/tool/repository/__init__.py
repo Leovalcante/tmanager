@@ -16,7 +16,7 @@ class Repository(Tool):
                  tags: list = None,
                  add_date: float = None,
                  install_date: float = None,
-                 last_update_date: float = None):
+                 last_update_date: float = None) -> None:
         """
         Initialize repository.
 
@@ -153,7 +153,7 @@ class Repository(Tool):
         self.last_update_date = time.time()
         return 0
 
-    def update_timestamps(self):
+    def update_timestamps(self) -> None:
         """
         Update the repository installation date and its last update date.
 
@@ -163,7 +163,7 @@ class Repository(Tool):
         self.set_install_date(t)
         self.set_last_update_date(t)
 
-    def is_installed(self):
+    def is_installed(self) -> bool:
         """
         Check if the Repository is cloned or not.
 
