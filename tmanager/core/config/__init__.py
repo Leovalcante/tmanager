@@ -8,7 +8,6 @@ from tmanager.core import messages as msg
 from tmanager.core.tool import Tool
 from tmanager.core.tool.localfile import LocalFile
 from tmanager.core.tool.repository import Repository
-from tmanager.utilities import file_system as utl_fs  # TODO: remove utils import in class
 
 
 class Config(dict):
@@ -224,14 +223,14 @@ class Config(dict):
         """
         self["automatic_install"] = automatic_install
 
-    def get_default_installation_directory(self) -> str or None:
+    def get_default_installation_directory(self) -> Optional[str]:
         """
         Return the default installation directory for repository.
 
         :return str|None: default installation directory if exists or None
         """
         if "default_installation_directory" in self.keys():
-            return utl_fs.trailing_slash(self["default_installation_directory"])
+            return self["default_installation_directory"]
 
         return None
 
