@@ -4,7 +4,6 @@ import time
 import git
 
 from tmanager.core.tool import Tool
-from tmanager.utilities import dates as utl_dates, file_system as utl_fs  # TODO: remove utils import in class
 
 
 class Repository(Tool):
@@ -72,13 +71,15 @@ class Repository(Tool):
         tool_desc += f"directory: {self.get_directory()}\n"
 
         if verbose:
-            tool_desc += f"add date: " \
-                         f"{'' if self.get_add_date() is None else utl_dates.time_to_ctime(self.get_add_date())}\n"
-            tool_desc += f"installation date: " \
-                         f"{'not installed' if self.get_install_date() is None else utl_dates.time_to_ctime(self.get_install_date())}\n"
+            tool_desc += "add date: "
+            tool_desc += '' if self.get_add_date() is None else time.ctime(self.get_add_date())
+            tool_desc += "\n"
+            tool_desc += "installation date: "
+            tool_desc += 'not installed' if self.get_install_date() is None else time.ctime(self.get_install_date())
+            tool_desc += "\n"
 
-        tool_desc += f"last update: " \
-                     f"{'not installed' if self.get_last_update_date() is None else utl_dates.time_to_ctime(self.get_last_update_date())}"
+        tool_desc += "last update: "
+        tool_desc += 'not installed' if self.get_last_update_date() is None else time.ctime(self.get_last_update_date())
 
         return tool_desc
 
@@ -149,7 +150,7 @@ class Repository(Tool):
             return 11
 
         # everything went fine, modify the last_update_date
-        self.last_update_date = utl_dates.now()
+        self.last_update_date = time.time()
         return 0
 
     def update_timestamps(self):
@@ -168,7 +169,7 @@ class Repository(Tool):
 
         :return bool: True if the tool is installed, False otherwise
         """
-        if self._install_date is not None or utl_fs.exists_pathname(self._directory):
+        if self._install_date is not None or os.path.exists(self._directory):
             return True
 
         return False
