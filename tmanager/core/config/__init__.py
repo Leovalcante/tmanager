@@ -29,6 +29,15 @@ class Config(dict):
 
         super(Config, self).__init__(*args, **kwargs)
 
+    def _get_config_file_path(self) -> str:
+        """
+        Get tmanager configuration file path
+        depending on the system in use.
+
+        :return str: tmanager config.json path
+        """
+        pass  # TODO
+
     def load(self, importing: bool = None) -> int:
         """
         Load tman configurations.
