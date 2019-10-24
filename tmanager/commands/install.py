@@ -115,8 +115,8 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
             # Ask the user what to do with the directory found
             # If assume_yes is set, then the default action that is take is (3):update
             choice = click.prompt(msg.Echoes.input(
-                f"Directory '{tool.get_directory()}' found, what to do? \n[1] nothing; [2] delete & clone; "
-                f"[3] update\n>>>"), default=None) if not assume_yes else "3"
+                f"Directory '{tool.get_directory()}' found, what to do? \n[1] nothing\n[2] delete & clone\n"
+                f"[3] update\n"), default=None, prompt_suffix=">>> ") if not assume_yes else "3"
 
             # NOTE: please wait before modifying this block of code!!!
             if choice == "2":
