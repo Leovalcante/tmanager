@@ -1,5 +1,7 @@
 # Tool Manager
-##### *tman v1.0.0*
+
+[![version](https://img.shields.io/badge/version-2.0.0-brightgreen.svg)](https://github.com/ssh3ll/tmanager/releases/tag/v2.0.0)
+[![python required](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
 
 
 ## What is tman?
