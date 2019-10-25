@@ -8,7 +8,7 @@ from tmanager.core.config import Config
 
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
 @click.option("-v", "--verbose", is_flag=True, help="Execute command in verbose mode.")
-@click.version_option(version, "-V", "--version", prog_name=name_desc, )
+@click.version_option(version, "-V", "--version", prog_name=name_desc)
 @click.pass_context
 def tman(ctx: click.core.Context, verbose: bool) -> None:
     """
