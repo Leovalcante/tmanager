@@ -3,8 +3,8 @@ import time
 
 import click
 
-from tmanager.core import messages as msg
 from tmanager.core.file_system import FileSystem
+from tmanager.core.messages import Prints, Echoes
 from tmanager.core.tool.repository import Repository
 from tmanager.utilities import commands as utl_cmd
 
@@ -83,7 +83,7 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
 
     # If there's no tool to install, display error message and return
     if len(tools) == 0:
-        msg.Prints.warning("There's no tool to install", cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.warning("There's no tool to install", cmd_name=CMD_NAME, log_file_name=log_file_name)
         return 1
 
     # Install any tool that matches the criteria
@@ -99,8 +99,7 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
             tot_installed += 1
 
             if not _all:
-                msg.Prints.info(f"'{tool.get_name()}' cloned successfully",
-                                cmd_name=CMD_NAME, log_file_name=log_file_name)
+                Prints.info(f"'{tool.get_name()}' cloned successfully", cmd_name=CMD_NAME, log_file_name=log_file_name)
 
             # append the tool name to the installed toolnames list
             installed.append(tool.get_name())
@@ -116,16 +115,16 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
             #   (3) update the content if and only if it can be updated.
             # Ask the user what to do with the directory found
             # If assume_yes is set, then the default action that is take is (3):update
-            choice = click.prompt(msg.Echoes.input(
+            choice = click.prompt(Echoes.input(
                 f"Directory '{tool.get_directory()}' found, what to do? \n[1] nothing\n[2] delete & clone\n"
                 f"[3] update\n"), default=None, prompt_suffix=">>> ") if not assume_yes else "3"
 
             # NOTE: please wait before modifying this block of code!!!
             if choice == "2":
                 # Delete and clone the repo
-                msg.Prints.info(f"removing '{tool.get_name()}'..", cmd_name=CMD_NAME, log_file_name=log_file_name)
+                Prints.info(f"removing '{tool.get_name()}'..", cmd_name=CMD_NAME, log_file_name=log_file_name)
                 FileSystem.delete(tool.get_directory())
-                msg.Prints.info(f"cloning '{tool.get_name()}'..", cmd_name=CMD_NAME, log_file_name=log_file_name)
+                Prints.info(f"cloning '{tool.get_name()}'..", cmd_name=CMD_NAME, log_file_name=log_file_name)
                 tool.clone()
                 # Update repo install date and last-update-date
                 tool.update_timestamps()
@@ -134,8 +133,8 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
 
             elif choice == "3":
                 # Just update the repo content
-                msg.Prints.info(f"updating '{tool.get_name()}'.. this may take a while.", show_icon=False,
-                                cmd_name=CMD_NAME, log_file_name=log_file_name)
+                Prints.info(f"updating '{tool.get_name()}'.. this may take a while.", show_icon=False,
+                            cmd_name=CMD_NAME, log_file_name=log_file_name)
                 res = tool.update()
 
                 if tool.get_install_date() is None:
@@ -144,20 +143,20 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
                 tool.set_last_update_date(time.time())
                 cfg.update_tool(tool)
                 if res == 0:
-                    msg.Prints.info(f"'{tool.get_name()}' updates successfully",
-                                    cmd_name=CMD_NAME, log_file_name=log_file_name)
+                    Prints.info(f"'{tool.get_name()}' updates successfully",
+                                cmd_name=CMD_NAME, log_file_name=log_file_name)
                 elif res == 1:
-                    msg.Prints.info(f"'{tool.get_name()}' is already up-to-date",
-                                    cmd_name=CMD_NAME, log_file_name=log_file_name)
+                    Prints.info(f"'{tool.get_name()}' is already up-to-date",
+                                cmd_name=CMD_NAME, log_file_name=log_file_name)
                 else:
-                    msg.Prints.info(f"An unexpected error has occurred when trying to update {tool.get_name()}",
-                                    cmd_name=CMD_NAME, log_file_name=log_file_name)
+                    Prints.info(f"An unexpected error has occurred when trying to update {tool.get_name()}",
+                                cmd_name=CMD_NAME, log_file_name=log_file_name)
             else:
                 # Choice (1): just continue
                 continue
 
     if _all:
-        msg.Prints.info(
+        Prints.info(
             f"Installed {'' if tot_installed == 0 else f'{str(installed)}, '}{tot_installed}/{len(tools)} tools",
             show_icon=False, cmd_name=CMD_NAME, log_file_name=log_file_name)
 

@@ -3,9 +3,9 @@ import os
 import click
 import git
 
-from tmanager.core import messages as msg
 from tmanager.core.config import Config
 from tmanager.core.file_system import FileSystem
+from tmanager.core.messages import Prints
 
 
 def find_tool(cfg: Config, url: str = None, tags: str = None, name: str = None, type: str = None,
@@ -230,8 +230,8 @@ def _make_it_list(args: list) -> list:
 
 def usage_error(cmd_name):
     # TODO: this shouldn't be there
-    msg.Prints.info("Usage error: tman [OPTIONS] command [ARGS]")
-    msg.Prints.info(f"Run 'tman {cmd_name} --help' to see options", show_icon=False)
+    Prints.info("Usage error: tman [OPTIONS] command [ARGS]")
+    Prints.info(f"Run 'tman {cmd_name} --help' to see options", show_icon=False)
 
 
 def validate_log_filename(filename: str, cmd_name: str, assume_yes: bool = False) -> str:
@@ -254,8 +254,8 @@ def validate_log_filename(filename: str, cmd_name: str, assume_yes: bool = False
         log_file_name = FileSystem.get_abs_path(filename)
     # if it's not writable or it doesn't exist or it's a directory, then quit
     elif os.path.exists(filename):
-        msg.Prints.warning(f"file {filename} doesn't exist or it's not writable",
-                           cmd_name=cmd_name, log_file_name=log_file_name)
+        Prints.warning(f"file {filename} doesn't exist or it's not writable",
+                       cmd_name=cmd_name, log_file_name=log_file_name)
         return log_file_name
     # attempt to create the new log file
     else:
@@ -263,11 +263,11 @@ def validate_log_filename(filename: str, cmd_name: str, assume_yes: bool = False
             with open(filename, "w"):
                 pass
         except PermissionError:
-            msg.Prints.warning(f"not enough privileges to create {filename}",
-                               cmd_name=cmd_name, log_file_name=log_file_name)
+            Prints.warning(f"not enough privileges to create {filename}",
+                           cmd_name=cmd_name, log_file_name=log_file_name)
             return log_file_name
         except FileNotFoundError:
-            msg.Prints.warning("please enter a valid pathname", cmd_name=cmd_name, log_file_name=log_file_name)
+            Prints.warning("please enter a valid pathname", cmd_name=cmd_name, log_file_name=log_file_name)
             return log_file_name
         log_file_name = FileSystem.get_abs_path(filename)
 

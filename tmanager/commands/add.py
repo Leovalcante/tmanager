@@ -4,9 +4,9 @@ import time
 
 import click
 
-from tmanager.core import messages as msg
 from tmanager.core.config import Config
 from tmanager.core.file_system import FileSystem
+from tmanager.core.messages import Prints, Echoes
 from tmanager.core.tool import Tool
 from tmanager.core.tool.localfile import LocalFile
 from tmanager.core.tool.repository import Repository
@@ -61,8 +61,8 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
         for t in tools:
             if add_tool(cfg, t, log_file_name) == 0:
                 imported_tools += 1
-        msg.Prints.info(f"Successfully imported {imported_tools}/{len(tools)} tools", show_icon=False,
-                        cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.info(f"Successfully imported {imported_tools}/{len(tools)} tools", show_icon=False,
+                    cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     # Add one tool
     else:
@@ -80,8 +80,8 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
 
         # If the provided directory doesn't exist or it's not writable, then quit
         if not FileSystem.is_path_writable(directory):
-            msg.Prints.error(f"{directory} doesn't exist or it isn't writable",
-                             cmd_name=CMD_NAME, log_file_name=log_file_name)
+            Prints.error(f"{directory} doesn't exist or it isn't writable",
+                         cmd_name=CMD_NAME, log_file_name=log_file_name)
             sys.exit(1)
 
         # Check whether the tool is a repository or a local file
@@ -94,8 +94,8 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
 
             # If the local_file does not exist or it's not writable, then quit
             if not FileSystem.is_path_writable(tool_path):
-                msg.Prints.error(f"{tool_path} doesn't exist or it's not writable",
-                                 cmd_name=CMD_NAME, log_file_name=log_file_name)
+                Prints.error(f"{tool_path} doesn't exist or it's not writable",
+                             cmd_name=CMD_NAME, log_file_name=log_file_name)
                 sys.exit(1)
 
             # Get the absolute pathname
@@ -108,7 +108,7 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
                 if os.path.exists(dst):
                     # Prompt confirm if it exists already
                     if not assume_yes \
-                            and not click.confirm(msg.Echoes.warning(f"{dst} already exists, overwrite it?")):
+                            and not click.confirm(Echoes.warning(f"{dst} already exists, overwrite it?")):
                         sys.exit(1)
 
                 # If the tools is not managed yet, then move file
@@ -125,8 +125,8 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
                     tool_path = directory + tool_path.split("/")[-1]
                     tool = LocalFile(tool_path, tags=tags, add_date=time.time())
                 else:
-                    msg.Prints.info(f"Tool {FileSystem.get_basename(tool_path)} is already managed!!!",
-                                    cmd_name=CMD_NAME, log_file_name=log_file_name)
+                    Prints.info(f"Tool {FileSystem.get_basename(tool_path)} is already managed!",
+                                cmd_name=CMD_NAME, log_file_name=log_file_name)
                     tool = None
             else:
                 tool = LocalFile(tool_path, tags=tags, add_date=time.time())
@@ -141,27 +141,27 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
         # Display error message
         if res == 0:
             # Everything okay
-            msg.Prints.info(f"'{tool.get_name()}' added successfully", cmd_name=CMD_NAME, log_file_name=log_file_name)
+            Prints.info(f"'{tool.get_name()}' added successfully", cmd_name=CMD_NAME, log_file_name=log_file_name)
             sys.exit(0)
         elif res == 1:
-            msg.Prints.warning(f"'{tool.get_name()}' not cloned, '{tool.get_directory()}' already exists!",
-                               cmd_name=CMD_NAME, log_file_name=log_file_name)
+            Prints.warning(f"'{tool.get_name()}' not cloned, '{tool.get_directory()}' already exists!",
+                           cmd_name=CMD_NAME, log_file_name=log_file_name)
         elif res == 2:
-            msg.Prints.warning(f"{tool.get_name()} not cloned, {tool.get_url()} seems not valid",
-                               cmd_name=CMD_NAME, log_file_name=log_file_name)
+            Prints.warning(f"{tool.get_name()} not cloned, {tool.get_url()} seems not valid",
+                           cmd_name=CMD_NAME, log_file_name=log_file_name)
         elif res == 3:
             # Tool managed 'directly/indirectly'
-            msg.Prints.warning(f"'{tool.get_name()}' is already managed by tman",
-                               cmd_name=CMD_NAME, log_file_name=log_file_name)
+            Prints.warning(f"'{tool.get_name()}' is already managed by tman",
+                           cmd_name=CMD_NAME, log_file_name=log_file_name)
         elif res == 5:
             # Local file does not exists
-            msg.Prints.warning(f"'{tool.get_name()}' does not exist", cmd_name=CMD_NAME, log_file_name=log_file_name)
+            Prints.warning(f"'{tool.get_name()}' does not exist", cmd_name=CMD_NAME, log_file_name=log_file_name)
         elif res == 6:
-            msg.Prints.warning(f"'{tool.get_directory()}' contains repositories that are already managed",
-                               cmd_name=CMD_NAME, log_file_name=log_file_name)
+            Prints.warning(f"'{tool.get_directory()}' contains repositories that are already managed",
+                           cmd_name=CMD_NAME, log_file_name=log_file_name)
         else:
             # Possible not managed errors
-            msg.Prints.info(f"ERRCODE {res}...", show_icon=False, cmd_name=CMD_NAME, log_file_name=log_file_name)
+            Prints.info(f"ERRCODE {res}...", show_icon=False, cmd_name=CMD_NAME, log_file_name=log_file_name)
         sys.exit(1)
 
     sys.exit(0)
@@ -187,7 +187,7 @@ def parse_tools_from_csv(repositories_file: str, default_install_dir: str,
     # Raise an exception if the provided file does not exist or it's not readable
     if not os.path.exists(repositories_file) or not os.path.isfile(repositories_file):
         raise click.ClickException(
-            msg.Echoes.error(f"File {repositories_file} doesn't exist. Please provide a valid path"))
+            Echoes.error(f"File {repositories_file} doesn't exist. Please provide a valid path"))
 
     tools = []
     # Read the file lines
@@ -230,18 +230,18 @@ def parse_tools_from_csv(repositories_file: str, default_install_dir: str,
             # If tool_path != directory, then move the local tool
             if tool_path != dst_dir:
                 if not os.path.exists(tool_path):
-                    msg.Prints.info(f"Cannot add {tool_path}, pathname does not exist.",
-                                    cmd_name=CMD_NAME, log_file_name=log_file_name)
+                    Prints.info(f"Cannot add {tool_path}, pathname does not exist.",
+                                cmd_name=CMD_NAME, log_file_name=log_file_name)
                     continue
                 if os.path.exists(dst_dir):
-                    msg.Prints.info(f"{dst_dir} exists, what to do?", show_icon=False,
-                                    cmd_name=CMD_NAME, log_file_name=log_file_name)
+                    Prints.info(f"{dst_dir} exists, what to do?", show_icon=False,
+                                cmd_name=CMD_NAME, log_file_name=log_file_name)
 
                     # If assume_yes is set, do not prompt anything and overwrite
                     # If assume_yes is not set, then ask for confirmation
-                    if assume_yes or click.confirm(msg.Echoes.input(f"Overwrite '{dst_dir}'?")):
-                        msg.Prints.info(f"Moving {tool_path} into {dst_dir}", show_icon=False,
-                                        cmd_name=CMD_NAME, log_file_name=log_file_name)
+                    if assume_yes or click.confirm(Echoes.input(f"Overwrite '{dst_dir}'?")):
+                        Prints.info(f"Moving {tool_path} into {dst_dir}", show_icon=False,
+                                    cmd_name=CMD_NAME, log_file_name=log_file_name)
                         FileSystem.delete(dst_dir)
                         FileSystem.move(tool_path, dst_dir)
                         tool = LocalFile(dst_dir, tags=tags, add_date=time.time())
@@ -316,8 +316,8 @@ def add_tool(cfg: Config, tool: Tool, log_file_name: str) -> int:
             # Add the repository only if clone
             cfg.add_tool(tool)
             cfg.save()
-            msg.Prints.success(f"Repository '{tool.get_name()}' cloned successfully into {tool.get_directory()}",
-                               cmd_name=CMD_NAME, log_file_name=log_file_name)
+            Prints.success(f"Repository '{tool.get_name()}' cloned successfully into {tool.get_directory()}",
+                           cmd_name=CMD_NAME, log_file_name=log_file_name)
 
             return 0
 

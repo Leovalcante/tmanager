@@ -4,7 +4,7 @@ import time
 
 import click
 
-from tmanager.core import messages as msg
+from tmanager.core.messages import Prints, Echoes
 from tmanager.utilities import commands as utl_cmd
 
 CMD_NAME = "find"
@@ -71,23 +71,23 @@ def find(ctx: click.core.Context, url: str, tags: str, name: str, type: str, las
     # Total. tools found
     tot = 0
     if tools:
-        msg.Prints.info("Tools found:", cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.info("Tools found:", cmd_name=CMD_NAME, log_file_name=log_file_name)
         for tool in tools:
-            msg.Prints.info(str(tool) if not vrb else tool.__str__(vrb), show_icon=False,
-                            cmd_name=CMD_NAME, log_file_name=log_file_name)
+            Prints.info(str(tool) if not vrb else tool.__str__(vrb), show_icon=False,
+                        cmd_name=CMD_NAME, log_file_name=log_file_name)
             tot += 1
 
     if not all:
         # Print summary if all is set
-        msg.Prints.info(f"Found {tot}/{len(cfg.get_tools())} tools", show_icon=False,
-                        cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.info(f"Found {tot}/{len(cfg.get_tools())} tools", show_icon=False,
+                    cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     elif tot != 0:
-        msg.Prints.info(f"Tot tools: {len(tools)}", show_icon=False, cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.info(f"Tot tools: {len(tools)}", show_icon=False, cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     else:
         # The case where all is set, and there's no tool registered
-        msg.Prints.info("Nothing found", cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.info("Nothing found", cmd_name=CMD_NAME, log_file_name=log_file_name)
     sys.exit(0)
 
 
@@ -101,7 +101,7 @@ def _date_to_epoch(date_time: str) -> float:
     try:
         date_time = str(datetime.datetime.strptime(date_time, '%d-%m-%Y')).split(" ")[0]
     except ValueError:
-        raise click.BadParameter(msg.Echoes.error("Bad data format! It must be dd-mm-yyyy"), param="--last-update-date",
+        raise click.BadParameter(Echoes.error("Bad data format! It must be dd-mm-yyyy"), param="--last-update-date",
                                  param_hint="Date format MUST BE dd-mm-yyyy")
 
     date_time = f"{date_time}-0-0-0-0-0-0"

@@ -4,8 +4,8 @@ from typing import Optional, Tuple
 
 import click
 
-from tmanager.core import messages as msg
 from tmanager.core.file_system import FileSystem
+from tmanager.core.messages import Prints, Echoes
 from tmanager.core.tool import Tool
 from tmanager.core.tool.localfile import LocalFile
 from tmanager.core.tool.repository import Repository
@@ -205,7 +205,7 @@ class Config(dict):
         :return: None
         """
         if self.get_automatic_install():
-            msg.Prints.info("Installing repositories, this may take a while...")
+            Prints.info("Installing repositories, this may take a while...")
             tot = 0
             for repo in self.get_tools(repo_only=True):
                 if repo.clone() == 0:
@@ -214,7 +214,7 @@ class Config(dict):
                     repo.update_timestamps()
                     self.update_tool(repo)
                     self.save()
-            msg.Prints.info(f"{tot} repo cloned")
+            Prints.info(f"{tot} repo cloned")
 
     def get_automatic_install(self) -> bool:
         """
@@ -267,32 +267,33 @@ class Config(dict):
         """
         self["default_installation_directory"] = new_installation_directory
 
-    def first_configuration(self, importing=False) -> None:
+    def first_configuration(self, importing: bool = False) -> None:
         """
         Guide the user through the very first setup of tman configuration.
 
+        :param bool importing: coming from import command
         :return: None
         """
         if not importing:
-            msg.Prints.warning("Configuration file not found!")
+            Prints.warning("Configuration file not found!")
 
         # Check if configuration directory exists, otherwise create it
         if not os.path.isdir(self.config_dir):
             os.makedirs(self.config_dir)
 
         # Guide the user through the very first setup
-        if click.confirm(msg.Echoes.input(
+        if click.confirm(Echoes.input(
                 f"Would you like to use {self.config_dir} as your default installation directory?"), default=True):
             default_installation_directory = self.config_dir
         else:
             default_installation_directory = click.prompt(
-                msg.Echoes.input("Please select default installation directory for your repositories"))
+                Echoes.input("Please select default installation directory for your repositories"))
 
-        automatic_install = click.confirm(msg.Echoes.input("Do you want to set automatic installation?"), default=True)
+        automatic_install = click.confirm(Echoes.input("Do you want to set automatic installation?"), default=True)
 
         self["default_installation_directory"] = default_installation_directory
         self["automatic_install"] = automatic_install
         self["tools"] = []
 
         self.save()
-        msg.Prints.success(f"Configuration file {self.config_file} has been created successfully")
+        Prints.success(f"Configuration file {self.config_file} has been created successfully")

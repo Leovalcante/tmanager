@@ -2,9 +2,9 @@ import sys
 
 import click
 
-from tmanager.core import messages as msg
 from tmanager.core.config import Config
 from tmanager.core.file_system import FileSystem
+from tmanager.core.messages import Prints, Echoes
 from tmanager.utilities import commands as utl_cmd
 
 CMD_NAME = "delete"
@@ -71,7 +71,7 @@ def delete(ctx: click.core.Context, name: str, input_file: str, all: bool, log: 
 
     # Display an info message if there's no repository to delete
     if (bool(all) is False and len(tools_to_delete) == 0) or (bool(all) and len(tools) == 0):
-        msg.Prints.warning("No tool to delete", cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.warning("No tool to delete", cmd_name=CMD_NAME, log_file_name=log_file_name)
         sys.exit(1)
 
     elif bool(all):
@@ -82,14 +82,14 @@ def delete(ctx: click.core.Context, name: str, input_file: str, all: bool, log: 
         # Delete the retrieved tools
         for tool in tools_to_delete:
             cfg.remove_tool(tool)
-            msg.Prints.success(f"{tool.get_name()} has been removed", cmd_name=CMD_NAME, log_file_name=log_file_name)
+            Prints.success(f"{tool.get_name()} has been removed", cmd_name=CMD_NAME, log_file_name=log_file_name)
 
             # Ensure the user wishes to delete the tools from file system too
-            if tool.is_installed() and (assume_yes or click.confirm(msg.Echoes.input(
+            if tool.is_installed() and (assume_yes or click.confirm(Echoes.input(
                     f"Delete {tool.get_name()} from file system too?"), default=False)):
                 FileSystem.delete(tool.get_directory())
-                msg.Prints.success(f"{tool.get_name()} successfully deleted from file system!",
-                                   cmd_name=CMD_NAME, log_file_name=log_file_name)
+                Prints.success(f"{tool.get_name()} successfully deleted from file system!",
+                               cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     cfg.save()
     sys.exit(0)
@@ -106,18 +106,18 @@ def _delete_all(cfg: Config, deleted_tools: list, assume_yes: bool, log_file_nam
     :return: None
     """
     # Prompt for confirmation
-    delete_all_repos = assume_yes or click.confirm(msg.Echoes.input("Remove every tool from tman?"), default=True)
+    delete_all_repos = assume_yes or click.confirm(Echoes.input("Remove every tool from tman?"), default=True)
     if not delete_all_repos:
         raise click.Abort()
 
     # Remove all the tools
-    msg.Prints.info(f"{cfg.remove_all_tools()} tools removed", cmd_name=CMD_NAME, log_file_name=log_file_name)
+    Prints.info(f"{cfg.remove_all_tools()} tools removed", cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     # Update the configuration file
     cfg.save()
 
     # Ensure the user wishes to delete the tools from file system (FS)
-    delete_all_file_system = click.confirm(msg.Echoes.input("Delete every tool from the file system?"),
+    delete_all_file_system = click.confirm(Echoes.input("Delete every tool from the file system?"),
                                            default=False) if not assume_yes else False
 
     # Delete every tool from the file system if the user confirmed
@@ -125,17 +125,17 @@ def _delete_all(cfg: Config, deleted_tools: list, assume_yes: bool, log_file_nam
         for tool in deleted_tools:
             if tool.is_installed():
                 FileSystem.delete(tool.get_directory())
-                msg.Prints.info(f"{tool.get_directory()} deleted", show_icon=False,
-                                cmd_name=CMD_NAME, log_file_name=log_file_name)
+                Prints.info(f"{tool.get_directory()} deleted", show_icon=False,
+                            cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     # Let the user decide which tool he wishes to delete permanently!
     elif deleted_tools and not assume_yes:
-        msg.Prints.info("Enter comma-separated list of indexes to remove (i.e. 1,3,4)",
-                        cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.info("Enter comma-separated list of indexes to remove (i.e. 1,3,4)",
+                    cmd_name=CMD_NAME, log_file_name=log_file_name)
 
         for tool in deleted_tools:
-            msg.Prints.info(f"[{str(deleted_tools.index(tool) + 1)}]: {tool.get_name()}", show_icon=False,
-                            cmd_name=CMD_NAME, log_file_name=log_file_name)
+            Prints.info(f"[{str(deleted_tools.index(tool) + 1)}]: {tool.get_name()}", show_icon=False,
+                        cmd_name=CMD_NAME, log_file_name=log_file_name)
 
         to_delete = None
         tool_to_save_indexes = click.prompt(">>> ", 'no')
@@ -147,10 +147,10 @@ def _delete_all(cfg: Config, deleted_tools: list, assume_yes: bool, log_file_nam
             for index in to_delete:
                 repo = deleted_tools[index]
                 FileSystem.delete(repo.get_directory())
-                msg.Prints.success(f"{repo.get_name()} deleted successfully from file system",
-                                   cmd_name=CMD_NAME, log_file_name=log_file_name)
+                Prints.success(f"{repo.get_name()} deleted successfully from file system",
+                               cmd_name=CMD_NAME, log_file_name=log_file_name)
 
         if not to_delete:
-            msg.Prints.info("No tool will be erased from file system", cmd_name=CMD_NAME, log_file_name=log_file_name)
+            Prints.info("No tool will be erased from file system", cmd_name=CMD_NAME, log_file_name=log_file_name)
             sys.exit(1)
     sys.exit(0)

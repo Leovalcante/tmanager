@@ -5,9 +5,9 @@ import sys
 import click
 from crontab import CronTab, CronItem
 
-from tmanager.core import messages as msg
 from tmanager.core.config import Config
 from tmanager.core.file_system import FileSystem
+from tmanager.core.messages import Prints, Echoes
 from tmanager.utilities import commands as utl_cmd
 
 _available_automatic_install_true_arguments = ["true", "on", "yes"]
@@ -53,23 +53,23 @@ def config(ctx: click.core.Context, default_dir: str, auto_install: str, cron_jo
     vrb = utl_cmd.get_verbose_from_context(ctx)
 
     # Check if user is root and ask confirmation to continue, if so
-    msg.Prints.verbose("Check user role", vrb)
+    Prints.verbose("Check user role", vrb)
 
     if os.getuid() == 0:
-        msg.Prints.warning(
+        Prints.warning(
             "You are root. It's preferable to manage your configuration using another non-privileged account.")
-        if click.confirm(msg.Echoes.input("Do you want to continue anyway?"), default=False):
-            msg.Prints.warning("You have been warned!")
+        if click.confirm(Echoes.input("Do you want to continue anyway?"), default=False):
+            Prints.warning("You have been warned!")
         else:
             sys.exit(1)
 
     # Check that just one option has been selected...
-    msg.Prints.verbose("Check that only one option has been selected", vrb)
+    Prints.verbose("Check that only one option has been selected", vrb)
 
     # If no option is specified, then print current config. settings
     if not ((bool(default_dir) != bool(auto_install)) != bool(cron_job)):
-        msg.Prints.info(f"auto-install: {cfg.get_automatic_install()}", show_icon=False)
-        msg.Prints.info(f"default-dir : {cfg.get_default_installation_directory()}", show_icon=False)
+        Prints.info(f"auto-install: {cfg.get_automatic_install()}", show_icon=False)
+        Prints.info(f"default-dir : {cfg.get_default_installation_directory()}", show_icon=False)
         sys.exit(0)
 
     # DEFAULT INSTALLATION DIRECTORY
@@ -82,8 +82,8 @@ def config(ctx: click.core.Context, default_dir: str, auto_install: str, cron_jo
 
     # CRON JOB CREATE
     elif cron_job:
-        msg.Prints.verbose("Cron job configuration selected", vrb)
-        msg.Prints.verbose(f"Checking argument {cron_job}", vrb)
+        Prints.verbose("Cron job configuration selected", vrb)
+        Prints.verbose(f"Checking argument {cron_job}", vrb)
 
         if _check_cron_argument(cron_job):
             # Create cron
@@ -104,7 +104,7 @@ def config(ctx: click.core.Context, default_dir: str, auto_install: str, cron_jo
                 _cron_job_enable_disable(cron_job, cron, vrb)
 
         else:
-            msg.Prints.error(f"You have to choose one among {str(_available_cron_job_arguments)} arguments")
+            Prints.error(f"You have to choose one among {str(_available_cron_job_arguments)} arguments")
             sys.exit(1)
 
     sys.exit(0)
@@ -165,8 +165,8 @@ def _cron_job_create_update(cfg: Config, cron_job: str, cron: CronTab, vrb: bool
     :param bool vrb: verbose output
     :return: None
     """
-    msg.Prints.verbose(f"Cron job {cron_job} selected", vrb)
-    msg.Prints.verbose("Check if a tman cron job does already exist", vrb)
+    Prints.verbose(f"Cron job {cron_job} selected", vrb)
+    Prints.verbose("Check if a tman cron job does already exist", vrb)
 
     cron_list = _get_cron_list(cron)
 
@@ -175,30 +175,30 @@ def _cron_job_create_update(cfg: Config, cron_job: str, cron: CronTab, vrb: bool
         job = _get_job_from_cron_list(cron_list)
 
         if cron_job == "create":
-            msg.Prints.warning("A tman job does already exist")
+            Prints.warning("A tman job does already exist")
 
-        update_cron = click.confirm(msg.Echoes.input(f"Do you want to update existing job: {job}"), default=False)
+        update_cron = click.confirm(Echoes.input(f"Do you want to update existing job: {job}"), default=False)
 
         if update_cron:
-            msg.Prints.info("You are going to be prompted by Tman Job Wizard in order to update your job")
+            Prints.info("You are going to be prompted by Tman Job Wizard in order to update your job")
             cron.remove(job)
         else:
-            msg.Prints.warning(f"@@@ Update aborted by {utl_cmd.get_user_login()}")
+            Prints.warning(f"@@@ Update aborted by {utl_cmd.get_user_login()}")
             raise click.Abort()
 
     elif not cron_list and cron_job == "update":
-        msg.Prints.warning("No cron job to update found.")
-        create_cron_job = click.confirm(msg.Echoes.input("Do you want to create a new cron job"), default=True)
+        Prints.warning("No cron job to update found.")
+        create_cron_job = click.confirm(Echoes.input("Do you want to create a new cron job"), default=True)
 
         if not create_cron_job:
-            msg.Prints.warning(f"@@@ Creation aborted by {utl_cmd.get_user_login()}")
+            Prints.warning(f"@@@ Creation aborted by {utl_cmd.get_user_login()}")
             raise click.Abort()
 
     # Start the cron job creation wizard if not update
     if not update_cron:
         _cron_job_wizard()
 
-    msg.Prints.verbose("Getting cron job data", vrb)
+    Prints.verbose("Getting cron job data", vrb)
 
     # Get cron job data:
     #       - mnt = minute
@@ -212,36 +212,36 @@ def _cron_job_create_update(cfg: Config, cron_job: str, cron: CronTab, vrb: bool
     cmt = "Tman cron job"
     cmd = f"{_which_tmanager} update --all -y -l {log_fname}"
 
-    msg.Prints.verbose("Creating cron job", vrb)
+    Prints.verbose("Creating cron job", vrb)
 
     # Create job
     job = cron.new(command=cmd, comment=cmt)
 
-    msg.Prints.verbose("Cron job created", vrb)
-    msg.Prints.verbose("Scheduling cron job according to user input", vrb)
+    Prints.verbose("Cron job created", vrb)
+    Prints.verbose("Scheduling cron job according to user input", vrb)
 
     # Set cron job schedule
     job_schedule = f"{mnt} {hrs} {dom} {mth} {dow}"
     job.setall(job_schedule)
 
-    msg.Prints.verbose(f"Cron job scheduled {job}", vrb)
+    Prints.verbose(f"Cron job scheduled {job}", vrb)
 
     # Check if cron job is valid
-    msg.Prints.verbose("Checking job validity", vrb)
+    Prints.verbose("Checking job validity", vrb)
 
     try:
         assert job.is_valid
     except AssertionError:
-        raise click.ClickException(msg.Echoes.error(f"@@@ The cron job '{job}' is invalid."))
+        raise click.ClickException(Echoes.error(f"@@@ The cron job '{job}' is invalid."))
 
     # Ask user confirmation to create the cron job
-    msg.Prints.info(f"You are about to write this job: '{job}'")
-    if click.confirm(msg.Echoes.input("@@@ Do you want to save the cron job?"), default=False):
+    Prints.info(f"You are about to write this job: '{job}'")
+    if click.confirm(Echoes.input("@@@ Do you want to save the cron job?"), default=False):
         cron.write()
-        msg.Prints.success("@@@ Cron job saved!")
-        # msg.Prints.success("@@@ The Wizard has finally accomplished his quest successfully, now he will go away! @@@")
+        Prints.success("@@@ Cron job saved!")
+        # Prints.success("@@@ The Wizard has finally accomplished his quest successfully, now he will go away! @@@")
     else:
-        msg.Prints.warning(f"@@@ Creation aborted by {utl_cmd.get_user_login()}")
+        Prints.warning(f"@@@ Creation aborted by {utl_cmd.get_user_login()}")
         raise click.Abort()
 
 
@@ -253,19 +253,19 @@ def _cron_job_delete(cron: CronTab, vrb: bool) -> None:
     :param bool vrb: verbose output
     :return: None
     """
-    msg.Prints.verbose("Cron job delete selected", vrb)
-    msg.Prints.verbose("Looking for cron job", vrb)
+    Prints.verbose("Cron job delete selected", vrb)
+    Prints.verbose("Looking for cron job", vrb)
 
     # Find cron job
     cron_list = _get_cron_list(cron)
     job = _get_job_from_cron_list(cron_list)
 
-    msg.Prints.verbose(f"Cron job found: {job}", vrb)
-    msg.Prints.verbose("Attempting to remove it", vrb)
+    Prints.verbose(f"Cron job found: {job}", vrb)
+    Prints.verbose("Attempting to remove it", vrb)
 
     # Delete job
     cron.remove(job)
-    msg.Prints.success("Cron job deleted")
+    Prints.success("Cron job deleted")
 
     cron.write()
 
@@ -279,14 +279,14 @@ def _cron_job_enable_disable(cron_job: str, cron: CronTab, vrb: bool) -> None:
     :param bool vrb: verbose output
     :return: None
     """
-    msg.Prints.verbose(f"Cron job {cron_job} selected", vrb)
-    msg.Prints.verbose("Looking for cron job", vrb)
+    Prints.verbose(f"Cron job {cron_job} selected", vrb)
+    Prints.verbose("Looking for cron job", vrb)
 
     # Find cron job
     cron_list = _get_cron_list(cron)
     job = _get_job_from_cron_list(cron_list)
 
-    msg.Prints.verbose(f"Cron job found: {job}", vrb)
+    Prints.verbose(f"Cron job found: {job}", vrb)
 
     # Enable cron job
     _enable_cron_job(cron, job, True if cron_job == "enable" else False)
@@ -300,17 +300,17 @@ def _cron_job_status(cron: CronTab, vrb: bool) -> None:
     :param bool vrb: verbose output
     :return: None
     """
-    msg.Prints.verbose("Cron job status selected", vrb)
-    msg.Prints.verbose("Looking for cron job", vrb)
+    Prints.verbose("Cron job status selected", vrb)
+    Prints.verbose("Looking for cron job", vrb)
 
     # Find cron job
     cron_list = _get_cron_list(cron)
     job = _get_job_from_cron_list(cron_list)
 
     # Check cron status
-    msg.Prints.success(f"Cron job found: {job}")
-    msg.Prints.success(f"Cron job status: {'enabled' if job.is_enabled() else 'disabled'}")
-    msg.Prints.success(f"Cron job validity: {job.is_valid()}")
+    Prints.success(f"Cron job found: {job}")
+    Prints.success(f"Cron job status: {'enabled' if job.is_enabled() else 'disabled'}")
+    Prints.success(f"Cron job validity: {job.is_valid()}")
 
 
 def _cron_job_wizard() -> None:
@@ -319,21 +319,21 @@ def _cron_job_wizard() -> None:
 
     :return: None
     """
-    msg.Prints.success("@@@ Welcome to Tman Job Wizard @@@")
-    msg.Prints.info(
+    Prints.success("@@@ Welcome to Tman Job Wizard @@@")
+    Prints.info(
         "@@@ We assume that you know what a cron job is, if not please read first https://en.wikipedia.org/wiki/Cron")
-    msg.Prints.info(
+    Prints.info(
         "@@@ To support every system, Tman does not support nonstandard predefined scheduling definitions")
-    msg.Prints.info("@@@ The only allowed special character is \",\"")
-    msg.Prints.info("@@@ So please use standard cron tab notation:")
-    msg.Prints.info("@@@ ┌───────────── minute (0 - 59)")
-    msg.Prints.info("@@@ │ ┌───────────── hour (0 - 23)")
-    msg.Prints.info("@@@ │ │ ┌───────────── day of the month (1 - 31)")
-    msg.Prints.info("@@@ │ │ │ ┌───────────── month (1 - 12)")
-    msg.Prints.info("@@@ │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday)")
-    msg.Prints.info("@@@ * * * * * command to execute\n")
-    msg.Prints.info("@@@ Now you will be asked several question, in order to create tmanager automatic update job")
-    msg.Prints.info("@@@ Leave it blank to * the info")
+    Prints.info("@@@ The only allowed special character is \",\"")
+    Prints.info("@@@ So please use standard cron tab notation:")
+    Prints.info("@@@ ┌───────────── minute (0 - 59)")
+    Prints.info("@@@ │ ┌───────────── hour (0 - 23)")
+    Prints.info("@@@ │ │ ┌───────────── day of the month (1 - 31)")
+    Prints.info("@@@ │ │ │ ┌───────────── month (1 - 12)")
+    Prints.info("@@@ │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday)")
+    Prints.info("@@@ * * * * * command to execute\n")
+    Prints.info("@@@ Now you will be asked several question, in order to create tmanager automatic update job")
+    Prints.info("@@@ Leave it blank to * the info")
 
 
 def _enable_cron_job(cron: CronTab, job: CronItem, enable: bool = True) -> None:
@@ -345,7 +345,7 @@ def _enable_cron_job(cron: CronTab, job: CronItem, enable: bool = True) -> None:
     :param bool enable: False if user want to disable a cron job, True otherwise
     """
     job.enable(enable)
-    msg.Prints.success(f"Cron job has been {'enabled' if job.is_enabled() else 'disabled'}")
+    Prints.success(f"Cron job has been {'enabled' if job.is_enabled() else 'disabled'}")
     cron.write()
 
 
@@ -367,12 +367,12 @@ def _get_cron_job_data(cfg: Config) -> list:
     default_logfile = f"{FileSystem.get_abs_path(cfg.config_dir, trailing_slash=True)}tman-cron.log"
 
     # Get cron job data
-    mnt = click.prompt(msg.Echoes.input("@@@ Insert minute (0 - 59)"), default="*")
-    hrs = click.prompt(msg.Echoes.input("@@@ Insert hour (0 - 23)"), default="*")
-    dom = click.prompt(msg.Echoes.input("@@@ Insert day of the month (1 - 31)"), default="*")
-    mth = click.prompt(msg.Echoes.input("@@@ Insert month (1 - 12)"), default="*")
-    dow = click.prompt(msg.Echoes.input("@@@ Insert day of the week (0 - 6) (Sunday to Saturday)"), default="*")
-    log = click.prompt(msg.Echoes.input("@@@ Enter a file pathname for logging stuffs?"), default=default_logfile)
+    mnt = click.prompt(Echoes.input("@@@ Insert minute (0 - 59)"), default="*")
+    hrs = click.prompt(Echoes.input("@@@ Insert hour (0 - 23)"), default="*")
+    dom = click.prompt(Echoes.input("@@@ Insert day of the month (1 - 31)"), default="*")
+    mth = click.prompt(Echoes.input("@@@ Insert month (1 - 12)"), default="*")
+    dow = click.prompt(Echoes.input("@@@ Insert day of the week (0 - 6) (Sunday to Saturday)"), default="*")
+    log = click.prompt(Echoes.input("@@@ Enter a file pathname for logging stuffs?"), default=default_logfile)
 
     # Check data consistency
     if not _cron_job_check(mnt, 0, 59):
@@ -427,7 +427,7 @@ def _get_job_from_cron_list(cron_list: list) -> CronItem:
     try:
         job = cron_list[0]
     except IndexError:
-        msg.Prints.error("Cron job not found")
+        Prints.error("Cron job not found")
         raise click.Abort()
 
     return job
@@ -459,7 +459,7 @@ def _raise_automatic_install_exception() -> None:
 
     :return: None
     """
-    raise click.BadOptionUsage("Automatic Install Option Error", msg.Echoes.error(
+    raise click.BadOptionUsage("Automatic Install Option Error", Echoes.error(
         f"Please select one among the available options: {str(_available_automatic_install_arguments)}"))
 
 
@@ -474,7 +474,7 @@ def _raise_cron_input_data_exception(param: str, param_hint: str) -> None:
     param = param.capitalize()
     param_hint = f"{param} value MUST BE in {param_hint} range"
     raise click.BadParameter(
-        msg.Echoes.error(f"@@@ {param} parameter does not respect the rules. That's not cool man..."),
+        Echoes.error(f"@@@ {param} parameter does not respect the rules. That's not cool man..."),
         param=param, param_hint=param_hint
     )
 
@@ -488,11 +488,11 @@ def _set_new_auto_install(auto_install: str, cfg: Config, vrb: bool) -> None:
     :param bool vrb: verbose output
     :return: None
     """
-    msg.Prints.verbose("Change automatic install selected", vrb)
+    Prints.verbose("Change automatic install selected", vrb)
 
     new_automatic_install = None
 
-    msg.Prints.verbose(f"Check if given input is valid: {auto_install}", vrb)
+    Prints.verbose(f"Check if given input is valid: {auto_install}", vrb)
 
     if _check_automatic_install_argument(auto_install):
         if _is_automatic_install_true(auto_install):
@@ -507,10 +507,10 @@ def _set_new_auto_install(auto_install: str, cfg: Config, vrb: bool) -> None:
     else:
         _raise_automatic_install_exception()
 
-    msg.Prints.verbose(f"Automatic install has been set to {new_automatic_install}", vrb)
+    Prints.verbose(f"Automatic install has been set to {new_automatic_install}", vrb)
 
     cfg.set_automatic_install(new_automatic_install)
-    msg.Prints.success(f"Automatic install has been {'enabled' if new_automatic_install else 'disabled'}")
+    Prints.success(f"Automatic install has been {'enabled' if new_automatic_install else 'disabled'}")
     cfg.save()
 
 
@@ -526,18 +526,18 @@ def _set_new_default_dir(default_dir: str, cfg: Config, vrb: bool) -> None:
     # Get the absolute path of new default installation directory
     default_dir = FileSystem.get_abs_path(default_dir)
 
-    msg.Prints.verbose("Change default installation directory selected", vrb)
+    Prints.verbose("Change default installation directory selected", vrb)
 
     # Check if directory exists, if not create it first
-    msg.Prints.verbose(f"Check if new directory {default_dir} exists", vrb)
+    Prints.verbose(f"Check if new directory {default_dir} exists", vrb)
     if not os.path.isdir(default_dir):
-        msg.Prints.verbose(f"New directory {default_dir} does not exist", vrb)
+        Prints.verbose(f"New directory {default_dir} does not exist", vrb)
 
         os.makedirs(default_dir)
-        msg.Prints.verbose(f"{default_dir} created", vrb)
+        Prints.verbose(f"{default_dir} created", vrb)
 
-    msg.Prints.verbose("Setting new default installation directory", vrb)
+    Prints.verbose("Setting new default installation directory", vrb)
 
     cfg.set_default_installation_directory(default_dir)
-    msg.Prints.success(f"Default installation directory directory changed in {default_dir}")
+    Prints.success(f"Default installation directory directory changed in {default_dir}")
     cfg.save()

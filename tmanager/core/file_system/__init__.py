@@ -5,7 +5,7 @@ import zipfile
 from distutils import dir_util
 from typing import Optional
 
-from tmanager.core import messages as msg
+from tmanager.core.messages import Prints
 
 
 class FileSystem:
@@ -296,7 +296,7 @@ class FileSystem:
                 if delete:
                     FileSystem.delete(abs_src)
             except FileExistsError:  # TODO: review this catch, we may have missed some exceptions
-                msg.Prints.info(f"ERROR: The file {dst} already exists!")
+                Prints.info(f"ERROR: The file {dst} already exists!")
                 return 1
 
         else:  # We are moving a file

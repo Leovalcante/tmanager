@@ -6,9 +6,9 @@ import zipfile
 
 import click
 
-from tmanager.core import messages as msg
 from tmanager.core.config import Config
 from tmanager.core.file_system import FileSystem
+from tmanager.core.messages import Prints, Echoes
 from tmanager.core.tool.localfile import LocalFile
 from tmanager.core.tool.repository import Repository
 from tmanager.utilities import commands as utl_cmd
@@ -64,15 +64,14 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
 
     # Validate input filename
     if not FileSystem.is_path_writable(infile):
-        msg.Prints.info(f"'{infile}' does not exist or it isn't readable",
-                        cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.info(f"'{infile}' does not exist or it isn't readable", cmd_name=CMD_NAME, log_file_name=log_file_name)
         sys.exit(1)
 
     # Attempt to load the configuration file
     new_cfg = Config()
     if new_cfg.load(importing=True) == 1:
         # Create the default installation directory if it doesn't exist
-        msg.Prints.info("Configuration file not found", cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.info("Configuration file not found", cmd_name=CMD_NAME, log_file_name=log_file_name)
         new_cfg.first_configuration(importing=True)
 
     # Attempt to open the ZIP archive
@@ -80,8 +79,7 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
     try:
         zip_h = zipfile.ZipFile(infile, 'r')
     except zipfile.BadZipFile:
-        msg.Prints.info(f"The file '{infile}' doesn't seem a ZIP archive",
-                        cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.info(f"The file '{infile}' doesn't seem a ZIP archive", cmd_name=CMD_NAME, log_file_name=log_file_name)
         if zip_h:
             zip_h.close()
         sys.exit(1)
@@ -94,7 +92,7 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
         has_conf = False
 
     if not has_conf:
-        msg.Prints.info("No configuration file detected, quitting...", cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.info("No configuration file detected, quitting...", cmd_name=CMD_NAME, log_file_name=log_file_name)
         sys.exit(1)
 
     # Retrieve tools from the archive (if any)
@@ -117,7 +115,7 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
                           import_types=import_types if types else None, import_tags=import_tags if tags else None)
 
     else:
-        msg.Prints.info("Importing tools, this may take a while...", cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.info("Importing tools, this may take a while...", cmd_name=CMD_NAME, log_file_name=log_file_name)
         _import_conf_file(managed_tools, new_cfg, f"{tmp_dir}/conf.tman", assume_yes, log_file_name,
                           import_types=import_types if types else None, import_tags=import_tags if tags else None)
         _import_tools_from_archive(new_cfg, f"{tmp_dir}{'/' if not tmp_dir.endswith('/') else ''}",
@@ -161,7 +159,7 @@ def _import_conf_file(all_tools: list, new_cfg: Config, input_conf: str, assume_
                 b = True
                 for val in line.split(","):
                     r = val.split("-", 1)
-                    if r[1] in ["True", "False"]:
+                    if r[1] in ("True", "False"):
                         # Convert JSON "True/False" into True/False
                         r[1] = True if r[1] == "True" else False  # TODO: this could be improved
 
@@ -220,7 +218,7 @@ def _import_conf_file(all_tools: list, new_cfg: Config, input_conf: str, assume_
                 if tool is not None:
                     if all_tools.__contains__(tool):
                         # If the tool is already managed, then prompt confirmation
-                        if assume_yes or click.confirm(msg.Echoes.input(
+                        if assume_yes or click.confirm(Echoes.input(
                                 f"{tool.get_name()} is already managed, overwrite its configuration?"), default=True):
                             new_cfg.update_tool(tool)
 
@@ -230,7 +228,7 @@ def _import_conf_file(all_tools: list, new_cfg: Config, input_conf: str, assume_
                     new_cfg.save()
 
     new_cfg.save()
-    msg.Prints.info("Configuration file saved", cmd_name=CMD_NAME, log_file_name=log_file_name)
+    Prints.info("Configuration file saved", cmd_name=CMD_NAME, log_file_name=log_file_name)
 
 
 def _import_tools_from_archive(new_cfg: Config, tmp_dir: str, assume_yes: bool, log_file_name: str,
@@ -271,11 +269,11 @@ def _import_tools_from_archive(new_cfg: Config, tmp_dir: str, assume_yes: bool, 
                         continue
                 if os.path.exists(t.get_directory()):
                     # Prompt for action if the file already exists
-                    if assume_yes or click.confirm(msg.Echoes.input(f"{t.get_directory()} already exists, overwrite?"),
+                    if assume_yes or click.confirm(Echoes.input(f"{t.get_directory()} already exists, overwrite?"),
                                                    default=False):
                         if FileSystem.move(tmp_dir + FileSystem.get_basename(absf), t.get_directory()) == 0:
-                            msg.Prints.success(f"{t.get_directory()} replaced",
-                                               cmd_name=CMD_NAME, log_file_name=log_file_name)
+                            Prints.success(f"{t.get_directory()} replaced",
+                                           cmd_name=CMD_NAME, log_file_name=log_file_name)
                             tot_imported += 1
 
                 else:
@@ -286,7 +284,7 @@ def _import_tools_from_archive(new_cfg: Config, tmp_dir: str, assume_yes: bool, 
                 break
 
     if tot_imported != 0:
-        msg.Prints.success("tools imported properly", cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.success("tools imported properly", cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     FileSystem.delete(tmp_dir)
     new_cfg.save()

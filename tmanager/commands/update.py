@@ -2,7 +2,7 @@ import sys
 
 import click
 
-from tmanager.core import messages as msg
+from tmanager.core.messages import Prints
 from tmanager.utilities import commands as utl_cmd
 
 CMD_NAME = "update"
@@ -59,30 +59,29 @@ def update(ctx: click.core.Context, name: str, repo_url: str, all: bool, log: st
         # skip repo that are not installed
         if not repo.is_installed():
             if not all:
-                msg.Prints.warning(f"'{repo.get_name()}' is not installed.",
-                                   cmd_name=CMD_NAME, log_file_name=log_file_name)
+                Prints.warning(f"'{repo.get_name()}' is not installed.", cmd_name=CMD_NAME, log_file_name=log_file_name)
             continue
         res = repo.update()
         # already up-to-date
         if res == 1:
             if not all:
-                msg.Prints.warning(f"Tool '{repo.get_name()}' is already up to date.",
-                                   cmd_name=CMD_NAME, log_file_name=log_file_name)
+                Prints.warning(f"Tool '{repo.get_name()}' is already up to date.",
+                               cmd_name=CMD_NAME, log_file_name=log_file_name)
         # updated successfully
         elif res == 0:
             tot_updated += 1
             repo_name = repo.get_name()
             updated.append(repo_name)
             if not all:
-                msg.Prints.info(f"Tool '{repo_name}' updated successfully.", show_icon=False,
-                                cmd_name=CMD_NAME, log_file_name=log_file_name)
-        elif res == 5:
-            msg.Prints.info(f"No need to update local file '{repo.get_directory()}'", show_icon=False,
+                Prints.info(f"Tool '{repo_name}' updated successfully.", show_icon=False,
                             cmd_name=CMD_NAME, log_file_name=log_file_name)
+        elif res == 5:
+            Prints.info(f"No need to update local file '{repo.get_directory()}'", show_icon=False,
+                        cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     if all:
-        msg.Prints.info(f"Updated {'' if len(updated) == 0 else f'{str(updated)}, '}{tot_updated}/{len(repos)} repos",
-                        show_icon=False, cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.info(f"Updated {'' if len(updated) == 0 else f'{str(updated)}, '}{tot_updated}/{len(repos)} repos",
+                    show_icon=False, cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     cfg.save()
     sys.exit(0)

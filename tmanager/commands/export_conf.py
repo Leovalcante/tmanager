@@ -6,8 +6,8 @@ import zipfile
 
 import click
 
-from tmanager.core import messages as msg
 from tmanager.core.file_system import FileSystem
+from tmanager.core.messages import Prints, Echoes
 from tmanager.core.tool.localfile import LocalFile
 from tmanager.utilities import commands as utl_cmd
 
@@ -64,7 +64,7 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
 
     # File already exists, prompt for overwriting
     if res == 2 and not assume_yes:
-        if not click.confirm(msg.Echoes.input(f"Overwrite {outfile} ?"), default=False):
+        if not click.confirm(Echoes.input(f"Overwrite {outfile} ?"), default=False):
             sys.exit(1)
     # File or directory not writable
     elif res != 0:
@@ -73,10 +73,10 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
     # if no matching criteria is specified, then prompt the user for choosing tools
     exp_local = exp_all = False
     if not types and not tags:
-        exp_all = assume_yes or click.confirm(msg.Echoes.input("Export every tool?"), default=True)
+        exp_all = assume_yes or click.confirm(Echoes.input("Export every tool?"), default=True)
         if not exp_all:
             # Maybe export local tools only?
-            exp_local = click.confirm(msg.Echoes.input("Export local tools only?"), default=True)
+            exp_local = click.confirm(Echoes.input("Export local tools only?"), default=True)
 
     # Retrieve the tools that need to be "exported"
     tools_to_export = []
@@ -128,14 +128,14 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
 
         # Write the remaining lines, those that represent tools
         f.write(oth)
-        msg.Prints.info("Configuration file saved", cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.info("Configuration file saved", cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     # Add the config file to the archive
     FileSystem.zip(zip_h, conf_tmp_file_name)
 
     # Attempt to export the tools
     if tot_tools_export != 0:
-        msg.Prints.info(
+        Prints.info(
             f"Compressing {tot_tools_export} {'tool' if tot_tools_export == 1 else 'tools'}, it may take a while..",
             cmd_name=CMD_NAME, log_file_name=log_file_name)
         for t in tools_to_export:
@@ -143,7 +143,7 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
 
     # close the ZIP file handler
     zip_h.close()
-    msg.Prints.success("Archive created successfully", cmd_name=CMD_NAME, log_file_name=log_file_name)
+    Prints.success("Archive created successfully", cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     # delete temporary files
     FileSystem.delete(conf_tmp_file_name)
@@ -170,7 +170,7 @@ def _validate_pathname(filename: str, log_file_name: str) -> int:
     """
     # If the file exists, make sure it's writable
     if os.path.isfile(filename) and not FileSystem.is_path_writable(filename):
-        msg.Prints.info(f"The file {filename} is not writable", cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.info(f"The file {filename} is not writable", cmd_name=CMD_NAME, log_file_name=log_file_name)
         return 1
 
     elif os.path.isfile(filename):
@@ -178,8 +178,8 @@ def _validate_pathname(filename: str, log_file_name: str) -> int:
 
     # Otherwise make sure it's parent directory is writable
     elif not FileSystem.is_path_writable(FileSystem.get_parent_directory(filename)):
-        msg.Prints.info(f"The directory {FileSystem.get_parent_directory(filename)} is not writable",
-                        cmd_name=CMD_NAME, log_file_name=log_file_name)
+        Prints.info(f"The directory {FileSystem.get_parent_directory(filename)} is not writable",
+                    cmd_name=CMD_NAME, log_file_name=log_file_name)
         return 3
 
     return 0
