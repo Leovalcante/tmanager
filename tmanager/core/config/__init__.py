@@ -1,10 +1,11 @@
 import json
 import os
-from typing import Optional
+from typing import Optional, Tuple
 
 import click
 
 from tmanager.core import messages as msg
+from tmanager.core.file_system import FileSystem
 from tmanager.core.tool import Tool
 from tmanager.core.tool.localfile import LocalFile
 from tmanager.core.tool.repository import Repository
@@ -20,23 +21,23 @@ class Config(dict):
         :param args:
         :param kwargs:
         """
-        home_path = os.getenv("HOME")
-        tman_config_path = f"{home_path}/.tman"
-        tman_config_file = f"{tman_config_path}/config.json"
-
-        self.config_dir = tman_config_path
-        self.config_file = tman_config_file
+        self.config_dir, self.config_file = self._get_config_file_path()
 
         super(Config, self).__init__(*args, **kwargs)
 
-    def _get_config_file_path(self) -> str:
+    @staticmethod
+    def _get_config_file_path() -> Tuple[str, str]:
         """
         Get tmanager configuration file path
         depending on the system in use.
 
         :return str: tmanager config.json path
         """
-        pass  # TODO
+        home_path = FileSystem.get_home_env()
+        config_path = FileSystem.get_abs_path(f"{home_path}/.tman")
+        config_file = FileSystem.get_abs_path(f"{config_path}/config.json")
+
+        return config_path, config_file
 
     def load(self, importing: bool = None) -> int:
         """
