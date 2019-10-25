@@ -3,8 +3,9 @@ import sys
 import click
 
 from tmanager.core import messages as msg
+from tmanager.core.file_system import FileSystem
 from tmanager.core.tool.repository import Repository
-from tmanager.utilities import commands as utl_cmd, dates as utl_dates, file_system as utl_fs
+from tmanager.utilities import commands as utl_cmd, dates as utl_dates
 
 CMD_NAME = "install"
 
@@ -122,7 +123,7 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
             if choice == "2":
                 # Delete and clone the repo
                 msg.Prints.info(f"removing '{tool.get_name()}'..", cmd_name=CMD_NAME, log_file_name=log_file_name)
-                utl_fs.delete_from_fs(tool.get_directory())
+                FileSystem.delete(tool.get_directory())
                 msg.Prints.info(f"cloning '{tool.get_name()}'..", cmd_name=CMD_NAME, log_file_name=log_file_name)
                 tool.clone()
                 # Update repo install date and last-update-date

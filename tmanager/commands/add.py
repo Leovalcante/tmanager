@@ -6,10 +6,11 @@ import click
 
 from tmanager.core import messages as msg
 from tmanager.core.config import Config
+from tmanager.core.file_system import FileSystem
 from tmanager.core.tool import Tool
 from tmanager.core.tool.localfile import LocalFile
 from tmanager.core.tool.repository import Repository
-from tmanager.utilities import commands as utl_cmd, file_system as utl_fs
+from tmanager.utilities import commands as utl_cmd
 
 CMD_NAME = "add"
 
@@ -75,10 +76,10 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
         directory = install_dir or default_dir
 
         # Add a trailing slash if required
-        directory = utl_fs.trailing_slash(utl_fs.get_abs_path(directory))
+        directory = FileSystem.get_abs_path(directory, trailing_slash=True)
 
         # If the provided directory doesn't exist or it's not writable, then quit
-        if not utl_fs.is_writable(directory):
+        if not FileSystem.is_path_writable(directory):
             msg.Prints.error(f"{directory} doesn't exist or it isn't writable",
                              cmd_name=CMD_NAME, log_file_name=log_file_name)
             sys.exit(1)
@@ -92,7 +93,7 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
             tool_path = url
 
             # If the local_file does not exist or it's not writable, then quit
-            if not utl_fs.is_writable(tool_path):
+            if not FileSystem.is_path_writable(tool_path):
                 msg.Prints.error(f"{tool_path} doesn't exist or it's not writable",
                                  cmd_name=CMD_NAME, log_file_name=log_file_name)
                 sys.exit(1)
@@ -100,8 +101,7 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
             # Get the absolute pathname
             tool_path = os.path.abspath(tool_path)
 
-            dst = directory + utl_fs.get_file_name(tool_path) if directory != default_dir else \
-                default_dir + utl_fs.get_file_name(tool_path)
+            dst = (directory if directory != default_dir else default_dir) + FileSystem.get_basename(tool_path)
 
             # If the destination directory is provided by user
             if tool_path != directory and install_dir is not None:
@@ -112,20 +112,20 @@ def add(ctx: click.core.Context, tool: str, tags: str, install_dir: str, in_file
                         sys.exit(1)
 
                 # If the tools is not managed yet, then move file
-                if not cfg.has_tool(utl_fs.get_file_name(tool_path)):
+                if not cfg.has_tool(FileSystem.get_basename(tool_path)):
                     if os.path.isdir(tool_path):
-                        utl_fs.delete_from_fs(dst)
-                        utl_fs.move_file(tool_path, dst)
+                        FileSystem.delete(dst)
+                        FileSystem.move(tool_path, dst)
                     else:
                         # Move the tool
-                        utl_fs.move_file(tool_path, dst)
+                        FileSystem.move(tool_path, dst)
 
                     # Add trailing slash if requires
-                    tool_path = utl_fs.trailing_slash(tool_path)
+                    tool_path = FileSystem.get_abs_path(tool_path, trailing_slash=True)
                     tool_path = directory + tool_path.split("/")[-1]
                     tool = LocalFile(tool_path, tags=tags, add_date=time.time())
                 else:
-                    msg.Prints.info(f"Tool {utl_fs.get_file_name(tool_path)} is already managed!!!",
+                    msg.Prints.info(f"Tool {FileSystem.get_basename(tool_path)} is already managed!!!",
                                     cmd_name=CMD_NAME, log_file_name=log_file_name)
                     tool = None
             else:

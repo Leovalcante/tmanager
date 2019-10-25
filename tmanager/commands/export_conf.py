@@ -7,8 +7,9 @@ import zipfile
 import click
 
 from tmanager.core import messages as msg
+from tmanager.core.file_system import FileSystem
 from tmanager.core.tool.localfile import LocalFile
-from tmanager.utilities import commands as utl_cmd, file_system as utl_fs
+from tmanager.utilities import commands as utl_cmd
 
 CMD_NAME = "export_config"
 
@@ -129,8 +130,8 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
         f.write(oth)
         msg.Prints.info("Configuration file saved", cmd_name=CMD_NAME, log_file_name=log_file_name)
 
-    # add the config file to the archive
-    utl_fs.zip_all(zip_h, conf_tmp_file_name)
+    # Add the config file to the archive
+    FileSystem.zip(zip_h, conf_tmp_file_name)
 
     # Attempt to export the tools
     if tot_tools_export != 0:
@@ -138,14 +139,14 @@ def export_conf(ctx: click.core.Context, outfile: str, types: str, tags: str, lo
             f"Compressing {tot_tools_export} {'tool' if tot_tools_export == 1 else 'tools'}, it may take a while..",
             cmd_name=CMD_NAME, log_file_name=log_file_name)
         for t in tools_to_export:
-            utl_fs.zip_all(zip_h, t.get_directory())
+            FileSystem.zip(zip_h, t.get_directory())
 
     # close the ZIP file handler
     zip_h.close()
     msg.Prints.success("Archive created successfully", cmd_name=CMD_NAME, log_file_name=log_file_name)
 
     # delete temporary files
-    utl_fs.delete_from_fs(conf_tmp_file_name)
+    FileSystem.delete(conf_tmp_file_name)
 
     sys.exit(0)
 
@@ -168,7 +169,7 @@ def _validate_pathname(filename: str, log_file_name: str) -> int:
     :return int: status code
     """
     # If the file exists, make sure it's writable
-    if os.path.isfile(filename) and not utl_fs.is_writable(filename):
+    if os.path.isfile(filename) and not FileSystem.is_path_writable(filename):
         msg.Prints.info(f"The file {filename} is not writable", cmd_name=CMD_NAME, log_file_name=log_file_name)
         return 1
 
@@ -176,8 +177,8 @@ def _validate_pathname(filename: str, log_file_name: str) -> int:
         return 2
 
     # Otherwise make sure it's parent directory is writable
-    elif not utl_fs.is_writable(utl_fs.get_parent(filename)):
-        msg.Prints.info(f"The directory {utl_fs.get_parent(filename)} is not writable",
+    elif not FileSystem.is_path_writable(FileSystem.get_parent_directory(filename)):
+        msg.Prints.info(f"The directory {FileSystem.get_parent_directory(filename)} is not writable",
                         cmd_name=CMD_NAME, log_file_name=log_file_name)
         return 3
 

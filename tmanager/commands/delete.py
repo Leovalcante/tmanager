@@ -4,7 +4,8 @@ import click
 
 from tmanager.core import messages as msg
 from tmanager.core.config import Config
-from tmanager.utilities import commands as utl_cmd, file_system as utl_fs
+from tmanager.core.file_system import FileSystem
+from tmanager.utilities import commands as utl_cmd
 
 CMD_NAME = "delete"
 
@@ -86,7 +87,7 @@ def delete(ctx: click.core.Context, name: str, input_file: str, all: bool, log: 
             # Ensure the user wishes to delete the tools from file system too
             if tool.is_installed() and (assume_yes or click.confirm(msg.Echoes.input(
                     f"Delete {tool.get_name()} from file system too?"), default=False)):
-                utl_fs.delete_from_fs(tool.get_directory())
+                FileSystem.delete(tool.get_directory())
                 msg.Prints.success(f"{tool.get_name()} successfully deleted from file system!",
                                    cmd_name=CMD_NAME, log_file_name=log_file_name)
 
@@ -123,7 +124,7 @@ def _delete_all(cfg: Config, deleted_tools: list, assume_yes: bool, log_file_nam
     if delete_all_file_system:
         for tool in deleted_tools:
             if tool.is_installed():
-                utl_fs.delete_from_fs(tool.get_directory())
+                FileSystem.delete(tool.get_directory())
                 msg.Prints.info(f"{tool.get_directory()} deleted", show_icon=False,
                                 cmd_name=CMD_NAME, log_file_name=log_file_name)
 
@@ -145,7 +146,7 @@ def _delete_all(cfg: Config, deleted_tools: list, assume_yes: bool, log_file_nam
             # Delete valid number repos
             for index in to_delete:
                 repo = deleted_tools[index]
-                utl_fs.delete_from_fs(repo.get_directory())
+                FileSystem.delete(repo.get_directory())
                 msg.Prints.success(f"{repo.get_name()} deleted successfully from file system",
                                    cmd_name=CMD_NAME, log_file_name=log_file_name)
 

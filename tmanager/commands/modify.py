@@ -4,8 +4,9 @@ import click
 
 from tmanager.core import messages as msg
 from tmanager.core.config import Config
+from tmanager.core.file_system import FileSystem
 from tmanager.core.tool import Tool
-from tmanager.utilities import commands as utl_cmd, file_system as utl_fs
+from tmanager.utilities import commands as utl_cmd
 
 CMD_NAME = "modify"
 
@@ -70,14 +71,14 @@ def modify(ctx: click.core.Context, name: str, new_dir: str, tag_add: str, tag_r
         msg.Prints.verbose("Changing tool installation directory", vrb, cmd_name=CMD_NAME, log_file_name=log_file_name)
 
         # Make sure the directory exists and is writable.
-        if utl_fs.is_writable(new_dir):
+        if FileSystem.is_path_writable(new_dir):
             src_dir = tool.get_directory()
             dst_dir = f"{new_dir}{'' if new_dir.endswith('/') else '/'}{tool.get_name()}"
 
             msg.Prints.verbose("Try to move the tool", vrb, cmd_name=CMD_NAME, log_file_name=log_file_name)
 
             # Move the tool into the new directory
-            errcode = utl_fs.move_file(src_dir, dst_dir)
+            errcode = FileSystem.move(src_dir, dst_dir)
 
             if errcode == 1:
                 raise click.ClickException(msg.Echoes.error(f"The directory '{new_dir}' already exists!"))

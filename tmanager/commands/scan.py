@@ -8,8 +8,9 @@ import click
 import git
 
 from tmanager.core import messages as msg
+from tmanager.core.file_system import FileSystem
 from tmanager.core.tool.repository import Repository
-from tmanager.utilities import commands as utl_cmd, file_system as utl_fs
+from tmanager.utilities import commands as utl_cmd
 
 
 @click.command(options_metavar="", short_help="Scan filesystem seeking repositories.")
@@ -31,7 +32,7 @@ def scan(ctx: click.core.Context, root_dir: str) -> None:
     vrb = utl_cmd.get_verbose_from_context(ctx)
 
     # Set initial variable value
-    root_dir = root_dir or utl_fs.get_home_env()
+    root_dir = root_dir or FileSystem.get_home_env()
 
     if not os.path.isdir(root_dir):
         raise click.BadArgumentUsage(msg.Echoes.error(f"{root_dir} is not a directory"))

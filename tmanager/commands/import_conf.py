@@ -8,9 +8,10 @@ import click
 
 from tmanager.core import messages as msg
 from tmanager.core.config import Config
+from tmanager.core.file_system import FileSystem
 from tmanager.core.tool.localfile import LocalFile
 from tmanager.core.tool.repository import Repository
-from tmanager.utilities import commands as utl_cmd, file_system as utl_fs
+from tmanager.utilities import commands as utl_cmd
 
 CMD_NAME = "import_config"
 
@@ -62,7 +63,7 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
     import_tags = utl_cmd.sanitize_tags(tags)
 
     # Validate input filename
-    if not utl_fs.is_writable(infile):
+    if not FileSystem.is_path_writable(infile):
         msg.Prints.info(f"'{infile}' does not exist or it isn't readable",
                         cmd_name=CMD_NAME, log_file_name=log_file_name)
         sys.exit(1)
@@ -127,7 +128,7 @@ def import_conf(ctx: click.core.Context, infile: str, types: str, tags: str, log
     new_cfg.auto_install()
 
     # delete temp files
-    utl_fs.delete_from_fs(tmp_dir)
+    FileSystem.delete(tmp_dir)
 
     # close the handler
     if zip_h:
@@ -258,7 +259,7 @@ def _import_tools_from_archive(new_cfg: Config, tmp_dir: str, assume_yes: bool, 
         # And for any computed absolute pathname absf
         for absf in abs_name:
             # If name matches, then try to copy it (also ensure that the tool matches any tag/type that is provided)
-            if t.get_name() == utl_fs.get_file_name(absf) and (not import_types or t.get_type() in import_types):
+            if t.get_name() == FileSystem.get_basename(absf) and (not import_types or t.get_type() in import_types):
                 if import_tags:
                     match_tags = False
                     for tag in t.get_tags():
@@ -272,14 +273,14 @@ def _import_tools_from_archive(new_cfg: Config, tmp_dir: str, assume_yes: bool, 
                     # Prompt for action if the file already exists
                     if assume_yes or click.confirm(msg.Echoes.input(f"{t.get_directory()} already exists, overwrite?"),
                                                    default=False):
-                        if utl_fs.move_file(tmp_dir + utl_fs.get_file_name(absf), t.get_directory()) == 0:
+                        if FileSystem.move(tmp_dir + FileSystem.get_basename(absf), t.get_directory()) == 0:
                             msg.Prints.success(f"{t.get_directory()} replaced",
                                                cmd_name=CMD_NAME, log_file_name=log_file_name)
                             tot_imported += 1
 
                 else:
                     # Move the file it doesn't yet exist
-                    utl_fs.move_file(tmp_dir + utl_fs.get_file_name(absf), t.get_directory())
+                    FileSystem.move(tmp_dir + FileSystem.get_basename(absf), t.get_directory())
                     tot_imported += 1
 
                 break
@@ -287,5 +288,5 @@ def _import_tools_from_archive(new_cfg: Config, tmp_dir: str, assume_yes: bool, 
     if tot_imported != 0:
         msg.Prints.success("tools imported properly", cmd_name=CMD_NAME, log_file_name=log_file_name)
 
-    utl_fs.delete_from_fs(tmp_dir)
+    FileSystem.delete(tmp_dir)
     new_cfg.save()

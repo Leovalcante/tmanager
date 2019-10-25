@@ -5,7 +5,7 @@ import git
 
 from tmanager.core import messages as msg
 from tmanager.core.config import Config
-from tmanager.utilities import file_system as utl_fs
+from tmanager.core.file_system import FileSystem
 
 
 def find_tool(cfg: Config, url: str = None, tags: str = None, name: str = None, type: str = None,
@@ -248,10 +248,10 @@ def validate_log_filename(filename: str, cmd_name: str, assume_yes: bool = False
     log_file_name = ""
 
     # if it's a writable file then retrieve the logfile absolute pathname
-    if utl_fs.is_writable(filename) and os.path.isfile(filename):
+    if FileSystem.is_path_writable(filename) and os.path.isfile(filename):
         if not assume_yes and not click.confirm(f"'{filename}' exists, overwrite?"):
             return log_file_name
-        log_file_name = utl_fs.get_abs_path(filename)
+        log_file_name = FileSystem.get_abs_path(filename)
     # if it's not writable or it doesn't exist or it's a directory, then quit
     elif os.path.exists(filename):
         msg.Prints.warning(f"file {filename} doesn't exist or it's not writable",
@@ -269,7 +269,7 @@ def validate_log_filename(filename: str, cmd_name: str, assume_yes: bool = False
         except FileNotFoundError:
             msg.Prints.warning("please enter a valid pathname", cmd_name=cmd_name, log_file_name=log_file_name)
             return log_file_name
-        log_file_name = utl_fs.get_abs_path(filename)
+        log_file_name = FileSystem.get_abs_path(filename)
 
     return log_file_name
 

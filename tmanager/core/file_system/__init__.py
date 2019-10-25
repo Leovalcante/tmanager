@@ -1,7 +1,11 @@
 import os
 import platform
 import shutil
+import zipfile
+from distutils import dir_util
 from typing import Optional
+
+from tmanager.core import messages as msg
 
 
 class FileSystem:
@@ -259,3 +263,86 @@ class FileSystem:
             shutil.rmtree(abs_path, ignore_errors=True)
         elif os.path.exists(abs_path):
             os.remove(abs_path)
+
+    @staticmethod
+    def move(src: str, dst: str, delete: bool = True) -> int:
+        """
+        Copies src into dst, if delete is True after the copy src is removed.
+
+        :param str src: source file or directory
+        :param str dst: destination file or directory
+        :param bool delete: remove the source file
+        :return int: status code:
+            - 0: everything went fine
+            - 1: destination file or directory already exists
+            - 2: error while moving file or directory
+            - 3: file or directory not moved: source == destination
+        """
+        # TODO: substitute move_file
+        abs_src = FileSystem.get_abs_path(src, trailing_slash=True)
+        abs_dst = FileSystem.get_abs_path(dst, trailing_slash=True)
+
+        # Check if source and destination are not the same
+        if abs_src == abs_dst:
+            return 3
+
+        # Check if source is a directory
+        if os.path.isdir(abs_src):
+            try:
+                # Copy the directory or the file
+                dir_util.copy_tree(abs_src, abs_dst)  # TODO: can this be done using shutil?
+
+                # Remove it if necessary
+                if delete:
+                    FileSystem.delete(abs_src)
+            except FileExistsError:  # TODO: review this catch, we may have missed some exceptions
+                msg.Prints.info(f"ERROR: The file {dst} already exists!")
+                return 1
+
+        else:  # We are moving a file
+            # Get the file basename
+            file_name = FileSystem.get_basename(abs_src)
+
+            destination = abs_dst if abs_dst.endswith(file_name) else abs_dst + file_name
+            # Try to move the file
+            try:
+                shutil.move(abs_src, destination)
+            except shutil.Error:
+                return 2
+
+        return 0
+
+    @staticmethod
+    def zip(zip_handler: zipfile.ZipFile, path: str, rel: Optional[str] = None) -> None:
+        """
+        Recursively compress any file and/or directory that is found under path.
+
+        :param zipfile.ZipFile zip_handler: zipfile handler
+        :param str path: path to compress
+        :param str rel: TODO: what is this???
+        :return: None
+        """
+        # TODO: ex zip_all
+        abs_path = FileSystem.get_abs_path(path)
+        basename = FileSystem.get_basename(abs_path)
+
+        if rel is None:
+            rel = basename
+
+        if os.path.isfile(abs_path):
+            if abs_path.endswith(".tman"):
+                zip_handler.write(abs_path, "conf.tman")
+            else:
+                zip_handler.write(path, os.path.join(rel, basename))
+
+        elif os.path.isdir(abs_path):
+            zip_handler.write(path, os.path.join(rel))
+
+            for root, dirs, files in os.walk(path):
+                for d in dirs:
+                    FileSystem.zip(zip_handler, os.path.join(root, d), os.path.join(rel, d))
+
+                for f in files:
+                    zip_handler.write(os.path.join(root, f), os.path.join(rel, f))
+
+                break  # TODO: can this break be replaced?

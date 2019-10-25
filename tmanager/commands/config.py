@@ -7,7 +7,8 @@ from crontab import CronTab, CronItem
 
 from tmanager.core import messages as msg
 from tmanager.core.config import Config
-from tmanager.utilities import commands as utl_cmd, file_system as utl_fs
+from tmanager.core.file_system import FileSystem
+from tmanager.utilities import commands as utl_cmd
 
 _available_automatic_install_true_arguments = ["true", "on", "yes"]
 _available_automatic_install_false_arguments = ["false", "off", "no"]
@@ -363,7 +364,7 @@ def _get_cron_job_data(cfg: Config) -> list:
     :return list: validated list of cron job data
     """
     # default log file
-    default_logfile = f"{utl_fs.trailing_slash(cfg.config_dir)}tman-cron.log"
+    default_logfile = f"{FileSystem.get_abs_path(cfg.config_dir, trailing_slash=True)}tman-cron.log"
 
     # Get cron job data
     mnt = click.prompt(msg.Echoes.input("@@@ Insert minute (0 - 59)"), default="*")
@@ -523,7 +524,7 @@ def _set_new_default_dir(default_dir: str, cfg: Config, vrb: bool) -> None:
     :return: None
     """
     # Get the absolute path of new default installation directory
-    default_dir = utl_fs.get_abs_path(default_dir)
+    default_dir = FileSystem.get_abs_path(default_dir)
 
     msg.Prints.verbose("Change default installation directory selected", vrb)
 
