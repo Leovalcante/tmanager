@@ -216,10 +216,10 @@ def parse_tools_from_csv(repositories_file: str, default_install_dir: str,
         # Get destination directory
         directory = default_install_dir
         if res[-1].startswith("d="):
-            directory = utl_fs.get_abs_path(res[-1].split("=")[1])
-            directory = utl_fs.trailing_slash(directory)
+            directory = FileSystem.get_abs_path(res[-1].split("=")[1])
+            directory = FileSystem.get_abs_path(directory, trailing_slash=True)
 
-        dst_dir = directory + utl_fs.get_file_name(url)
+        dst_dir = directory + FileSystem.get_basename(url)
 
         # Instantiate a Tool object, depending on it's kind
         tool = None
@@ -242,8 +242,8 @@ def parse_tools_from_csv(repositories_file: str, default_install_dir: str,
                     if assume_yes or click.confirm(msg.Echoes.input(f"Overwrite '{dst_dir}'?")):
                         msg.Prints.info(f"Moving {tool_path} into {dst_dir}", show_icon=False,
                                         cmd_name=CMD_NAME, log_file_name=log_file_name)
-                        utl_fs.delete_from_fs(dst_dir)
-                        utl_fs.move_file(tool_path, dst_dir)
+                        FileSystem.delete(dst_dir)
+                        FileSystem.move(tool_path, dst_dir)
                         tool = LocalFile(dst_dir, tags=tags, add_date=time.time())
                     else:
                         tool = None
@@ -251,7 +251,7 @@ def parse_tools_from_csv(repositories_file: str, default_install_dir: str,
                 # Move the file/dir if it doesn't exist!
                 else:
                     # Move the tool
-                    utl_fs.move_file(tool_path, dst_dir)
+                    FileSystem.move(tool_path, dst_dir)
                     tool = LocalFile(tool_path, tags=tags, add_date=time.time())
 
         if tool is not None:
