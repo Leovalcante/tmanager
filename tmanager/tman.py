@@ -18,6 +18,9 @@ def tman(ctx: click.core.Context, verbose: bool) -> None:
         and in a handy way.
         Keep your repos up-to-date and bring your tools and configurations
         wherever you wish.
+    \b
+        One Tool to rule them all, One Tool to find them,
+        One Tool to bring them all and in the darkness bind them.
     \f
 
     :param click.core.Context ctx: click context
