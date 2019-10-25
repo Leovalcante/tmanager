@@ -1,11 +1,12 @@
 import sys
+import time
 
 import click
 
 from tmanager.core import messages as msg
 from tmanager.core.file_system import FileSystem
 from tmanager.core.tool.repository import Repository
-from tmanager.utilities import commands as utl_cmd, dates as utl_dates
+from tmanager.utilities import commands as utl_cmd
 
 CMD_NAME = "install"
 
@@ -138,9 +139,9 @@ def install_repository(ctx: click.core.Context, name: str, repo_url: str, _all: 
                 res = tool.update()
 
                 if tool.get_install_date() is None:
-                    tool.set_install_date(utl_dates.now())
+                    tool.set_install_date(time.time())
 
-                tool.set_last_update_date(utl_dates.now())
+                tool.set_last_update_date(time.time())
                 cfg.update_tool(tool)
                 if res == 0:
                     msg.Prints.info(f"'{tool.get_name()}' updates successfully",

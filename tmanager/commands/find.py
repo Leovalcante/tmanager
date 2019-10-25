@@ -1,9 +1,11 @@
+import datetime
 import sys
+import time
 
 import click
 
 from tmanager.core import messages as msg
-from tmanager.utilities import commands as utl_cmd, dates as utl_dates
+from tmanager.utilities import commands as utl_cmd
 
 CMD_NAME = "find"
 
@@ -55,7 +57,7 @@ def find(ctx: click.core.Context, url: str, tags: str, name: str, type: str, las
             # Accept the format dd/mm/yyyy, though it gets converted
             last_update_date = last_update_date.replace("/", "-")
 
-        last_update_date = utl_dates.date_to_epoch(last_update_date)
+        last_update_date = _date_to_epoch(last_update_date)
 
     if all:
         # Retrieve all the tools
@@ -87,3 +89,23 @@ def find(ctx: click.core.Context, url: str, tags: str, name: str, type: str, las
         # The case where all is set, and there's no tool registered
         msg.Prints.info("Nothing found", cmd_name=CMD_NAME, log_file_name=log_file_name)
     sys.exit(0)
+
+
+def _date_to_epoch(date_time: str) -> float:
+    """
+    Returns the 'epoch-time' equivalent of the date taken as a parameter.
+
+    :param str date_time: date to convert in epoch. It MUST BE in dd-mm-yyyy format
+    :return float: seconds to epoch
+    """
+    try:
+        date_time = str(datetime.datetime.strptime(date_time, '%d-%m-%Y')).split(" ")[0]
+    except ValueError:
+        raise click.BadParameter(msg.Echoes.error("Bad data format! It must be dd-mm-yyyy"), param="--last-update-date",
+                                 param_hint="Date format MUST BE dd-mm-yyyy")
+
+    date_time = f"{date_time}-0-0-0-0-0-0"
+    # noinspection PyTypeChecker
+    date_time = time.mktime(tuple([int(e) for e in date_time.split("-")]))
+
+    return date_time
