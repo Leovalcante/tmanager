@@ -75,23 +75,6 @@ class Config(dict):
         with open(self.config_file, "w") as cfg:
             cfg.write(json.dumps(self))
 
-    def is_empty(self) -> bool:
-        """
-        Returns True if the configuration file is empty,
-        otherwise it returns False.
-
-        :return bool: True if configurations are empty, False otherwise
-        """
-        return bool(self)
-
-    def initialize_empty_tool_list(self) -> None:
-        """
-        Initialize the tools list
-
-        :return: None
-        """
-        self["tools"] = []
-
     def get_tools(self, repo_only: bool = False) -> list:
         """
         Returns every Tool managed by tman.
@@ -126,7 +109,7 @@ class Config(dict):
 
         return tools
 
-    def already_managed(self, tool: Tool) -> bool:
+    def already_manage(self, tool: Tool) -> bool:
         """
         Check if the input Tool is already managed by tman.
 

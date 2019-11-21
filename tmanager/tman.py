@@ -2,15 +2,14 @@ import importlib
 
 import click
 
-from tmanager import version, name_desc
+from tmanager import tman_version, tman_name_desc
 from tmanager.core.config import Config
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
-@click.option("-v", "--verbose", is_flag=True, help="Execute command in verbose mode.")
-@click.version_option(version, "-V", "--version", prog_name=name_desc)
+@click.version_option(tman_version, "-V", "--version", prog_name=tman_name_desc)
 @click.pass_context
-def tman(ctx: click.core.Context, verbose: bool) -> None:
+def tman(ctx: click.core.Context) -> None:
     """
     \b
     Tman - Tool Manager:
@@ -24,18 +23,15 @@ def tman(ctx: click.core.Context, verbose: bool) -> None:
     \f
 
     :param click.core.Context ctx: click context
-    :param bool verbose: show verbose messages
     :return: None
     """
-
     # Check that context object type is dict
     ctx.ensure_object(dict)
 
     # Add config object and verbose flag to context
-    cfg = Config()
-    cfg.load()
-    ctx.obj["configurations"] = cfg
-    ctx.obj["verbose"] = verbose
+    config = Config()
+    config.load()
+    ctx.obj["config"] = config
 
 
 # Dynamically add tman commands
@@ -56,7 +52,4 @@ for command in commands:
     command_function = getattr(module, command)
     tman.add_command(command_function)
 
-
-# MAIN
-if __name__ == "__main__":
-    tman()
+# TODO: In order to edit and detached version just for command instead of tman, should we add also command version??????

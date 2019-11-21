@@ -1,15 +1,15 @@
 from setuptools import setup, find_packages
-from tmanager import name, version, description, url
+from tmanager import tman_name, tman_version, tman_description, tman_url
 
 with open("README.md", "r") as f:
     long_description = f.read()
 
 setup(
-    name=name,
-    version=version,
-    url=url,
+    name=tman_name,
+    version=tman_version,
+    url=tman_url,
     license="MIT",
-    description=description,
+    description=tman_description,
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="ssh3ll",

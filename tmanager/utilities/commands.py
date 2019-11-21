@@ -136,30 +136,6 @@ def sanitize_types(types: str) -> list:
     return valid_types
 
 
-def sanitize_tags(tags: str) -> list:
-    """
-    Given a tag list (represented as the input string 'tags') it returns
-    a list containing valid and sanitized tags.
-
-    **Note that:
-        - tags cannot contain spaces
-        - this method might return an empty list
-
-    :param str tags: tag string to sanitize
-    :return list: sanitized tags
-    """
-    valid_tags = []
-    if tags:
-        tags = tags.split(",")
-        for tag in tags:
-            # Remove spaces
-            tag = tag.replace(" ", "")
-            if tag:
-                valid_tags.append(tag)
-
-    return valid_tags
-
-
 def remove_tags(line: str) -> (str, list):
     """
     Given a CSV-like tool string, returns a tuple (string, list)
@@ -226,52 +202,6 @@ def _make_it_list(args: list) -> list:
             r.append(x)
 
     return r
-
-
-def usage_error(cmd_name):
-    # TODO: this shouldn't be there
-    Prints.info("Usage error: tman [OPTIONS] command [ARGS]")
-    Prints.info(f"Run 'tman {cmd_name} --help' to see options", show_icon=False)
-
-
-def validate_log_filename(filename: str, cmd_name: str, assume_yes: bool = False) -> str:
-    """
-    Returns the absolute pathname of the filename given as input
-    if the file exists, is writable, and the user wishes to overwrite it
-    OR
-    if the file doesn't exist but is created successfully.
-    :param filename:
-    :param cmd_name:
-    :param bool assume_yes: overwrite the input file without asking the user
-    :return:
-    """
-    log_file_name = ""
-
-    # if it's a writable file then retrieve the logfile absolute pathname
-    if FileSystem.is_path_writable(filename) and os.path.isfile(filename):
-        if not assume_yes and not click.confirm(f"'{filename}' exists, overwrite?"):
-            return log_file_name
-        log_file_name = FileSystem.get_abs_path(filename)
-    # if it's not writable or it doesn't exist or it's a directory, then quit
-    elif os.path.exists(filename):
-        Prints.warning(f"file {filename} doesn't exist or it's not writable",
-                       cmd_name=cmd_name, log_file_name=log_file_name)
-        return log_file_name
-    # attempt to create the new log file
-    else:
-        try:
-            with open(filename, "w"):
-                pass
-        except PermissionError:
-            Prints.warning(f"not enough privileges to create {filename}",
-                           cmd_name=cmd_name, log_file_name=log_file_name)
-            return log_file_name
-        except FileNotFoundError:
-            Prints.warning("please enter a valid pathname", cmd_name=cmd_name, log_file_name=log_file_name)
-            return log_file_name
-        log_file_name = FileSystem.get_abs_path(filename)
-
-    return log_file_name
 
 
 def get_user_login() -> str:
